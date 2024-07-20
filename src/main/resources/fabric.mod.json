@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "id": "easyplacefix",
+  "version": "${version}",
+  "name": "EasyPlaceFix",
+  "description": "这是一个修复原版投影轻松放置的mod",
+  "authors": [
+    "uiop"
+  ],
+  "contact": {
+    "repo": "暂时没有仓库= ="
+  },
+  "license": "MIT",
+  "icon": "assets/easyplacefix/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "client": [
+    ],
+    "main": [
+      "org.uiop.easyplacefix.EasyPlaceFix"
+    ]
+  },
+  "mixins": [
+    "easyplacefix.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": "*",
+    "minecraft": ">=1.17"
+  }
+}

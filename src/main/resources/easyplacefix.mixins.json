@@ -1,0 +1,14 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "org.uiop.easyplacefix.Mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "MixinWorldUtils"
+  ],
+  "client": [
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
