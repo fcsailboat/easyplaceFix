@@ -7,6 +7,7 @@ import fi.dy.masa.litematica.world.SchematicWorldHandler;
 import fi.dy.masa.malilib.util.BlockUtils;
 import net.minecraft.block.*;
 import net.minecraft.block.enums.BlockFace;
+import net.minecraft.block.enums.Orientation;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
 import net.minecraft.state.property.DirectionProperty;
@@ -23,6 +24,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArgs;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 
 import java.util.Objects;
 
@@ -131,14 +133,42 @@ public class MixinWorldUtils {
             }
             //AXIS属性最终在数据包中仍然依靠face字段来判断
         }
+        else if (stateSchematic.contains(Properties.ORIENTATION)) {
+            Orientation orientation =stateSchematic.get(Properties.ORIENTATION);
+            float yaw = 0, pitch;
+            Direction facing= orientation.getFacing();
+            Direction  rotation  =orientation.getRotation();
+            if (facing==Direction.UP){
+                pitch=90f;
+            } else if (facing==Direction.DOWN) {
+                pitch=-90f;
+            }else {
+                yaw=switch (facing){
+                    case Direction.SOUTH -> 180F;
+                    case  Direction.WEST-> -90F;
+                    case Direction.EAST -> 90F;
+                default -> 0F;
+                };
+                pitch=90f;
+            }
+            if (yaw==0){
+                yaw=switch (rotation){
+                    case Direction.SOUTH -> 180F;
+                    case  Direction.WEST-> -90F;
+                    case Direction.EAST -> 90F;
+                    default -> 0F;
+                };
 
-
+            }
+            MinecraftClient minecraftClient = MinecraftClient.getInstance();
+            minecraftClient.getNetworkHandler().sendPacket(new PlayerMoveC2SPacket.LookAndOnGround(yaw, pitch, true));
+        }
 
 
     }
 
     @ModifyArgs(method = "doEasyPlaceAction",at = @At(value = "INVOKE", target = "Lnet/minecraft/util/hit/BlockHitResult;<init>(Lnet/minecraft/util/math/Vec3d;Lnet/minecraft/util/math/Direction;Lnet/minecraft/util/math/BlockPos;Z)V"))
-    private static void modify(org.spongepowered.asm.mixin.injection.invoke.arg.Args args){
+    private static void modify(Args args){
         if (side2!=null){
             args.set(1,side2);
         }
