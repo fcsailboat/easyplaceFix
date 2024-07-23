@@ -47,16 +47,13 @@ public class MixinWorldUtils {
             Direction d = stateSchematic.get(property);
             if (!(block instanceof TrapdoorBlock)){
 
-                if (block instanceof RodBlock ||block instanceof WallRedstoneTorchBlock ||block instanceof WallTorchBlock){
-                    side2 =d;
-                }else if (block ==Blocks.GRINDSTONE){
-                    BlockFace blockFace = stateSchematic.get(Properties.BLOCK_FACE);
-                    //只有WALL属性可以处理
-                    if (Objects.requireNonNull(blockFace) == BlockFace.WALL) {
-                        side2 = d;
-                    }
-                }else {
+                if (block ==Blocks.HOPPER){//漏斗
                     side2 = d.getOpposite();//这个是我今天发现的方法
+                }
+                else {
+                    side2 =d;
+                    //墙上的告示牌，末地烛，避雷针，墙上的火把
+
                 }
 
 
