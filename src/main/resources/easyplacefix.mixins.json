@@ -4,6 +4,7 @@
   "package": "org.uiop.easyplacefix.Mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
+    "MixinPistonBlock",
     "MixinWorldUtils"
   ],
   "client": [

@@ -28,6 +28,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArgs;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
+import org.uiop.easyplacefix.EasyPlaceFix;
 
 
 @Mixin(WorldUtils.class)
@@ -151,9 +152,13 @@ public class MixinWorldUtils {
                     case Direction.EAST -> 90F;
                     default -> 0F;
                 };
+                if (block instanceof PistonBlock){
+                    EasyPlaceFix.blockState =stateSchematic;
+                    EasyPlaceFix.modifyBoolean=true;
+                }
             }
             MinecraftClient minecraftClient = MinecraftClient.getInstance();
-            minecraftClient.getNetworkHandler().sendPacket(new PlayerMoveC2SPacket.LookAndOnGround(yaw, pitch, true));
+            minecraftClient.getNetworkHandler().sendPacket(new PlayerMoveC2SPacket.LookAndOnGround(yaw, pitch, mc.player.isOnGround()));
         }
         else if(stateSchematic.contains(Properties.AXIS)){
             Direction.Axis axis =   stateSchematic.get(Properties.AXIS);
@@ -206,7 +211,7 @@ public class MixinWorldUtils {
 
             }
             MinecraftClient minecraftClient = MinecraftClient.getInstance();
-            minecraftClient.getNetworkHandler().sendPacket(new PlayerMoveC2SPacket.LookAndOnGround(yaw, pitch, true));
+            minecraftClient.getNetworkHandler().sendPacket(new PlayerMoveC2SPacket.LookAndOnGround(yaw, pitch, mc.player.isOnGround()));
         }
 
 
