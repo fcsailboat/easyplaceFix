@@ -9,6 +9,7 @@ import fi.dy.masa.malilib.util.BlockUtils;
 import net.minecraft.block.*;
 import net.minecraft.block.enums.ComparatorMode;
 import net.minecraft.block.enums.Orientation;
+import net.minecraft.block.enums.RailShape;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.network.packet.c2s.play.PlayerInteractBlockC2SPacket;
 import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
@@ -173,16 +174,16 @@ public class MixinWorldUtils {
 
 
         }
-//        else if (stateSchematic.contains(Properties.RAIL_SHAPE)) {
-//              RailShape railShape= stateSchematic.get(Properties.RAIL_SHAPE);
-//            MinecraftClient minecraftClient = MinecraftClient.getInstance();
-//            if (railShape==RailShape.NORTH_SOUTH){
-//                minecraftClient.getNetworkHandler().sendPacket(new PlayerMoveC2SPacket.LookAndOnGround(0f, 0f, true));
-//           }else{
-//                minecraftClient.getNetworkHandler().sendPacket(new PlayerMoveC2SPacket.LookAndOnGround(90f, 0f, true));
-//           }
-//
-//        }
+        else if (stateSchematic.contains(Properties.RAIL_SHAPE)) {
+              RailShape railShape= stateSchematic.get(Properties.RAIL_SHAPE);
+            MinecraftClient minecraftClient = MinecraftClient.getInstance();
+            if (railShape==RailShape.NORTH_SOUTH){
+                minecraftClient.getNetworkHandler().sendPacket(new PlayerMoveC2SPacket.LookAndOnGround(0f, 0f, true));
+           }else{
+                minecraftClient.getNetworkHandler().sendPacket(new PlayerMoveC2SPacket.LookAndOnGround(90f, 0f, true));
+           }
+
+        }
         else if (stateSchematic.contains(Properties.ORIENTATION)) {
             Orientation orientation =stateSchematic.get(Properties.ORIENTATION);
             float yaw = 0, pitch;
