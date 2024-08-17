@@ -5,7 +5,6 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.PistonBlock;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.ModifyArgs;
 import org.uiop.easyplacefix.EasyPlaceFix;
 
 @Mixin(PistonBlock.class)

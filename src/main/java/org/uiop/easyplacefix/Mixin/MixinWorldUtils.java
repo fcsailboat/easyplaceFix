@@ -85,7 +85,7 @@ public class MixinWorldUtils {
         if (property != null) {
             Block block = stateSchematic.getBlock();
             Direction d = stateSchematic.get(property);
-            if (!(block instanceof TrapdoorBlock)){
+
                 if (block ==Blocks.HOPPER){//漏斗
                     side2 = d.getOpposite();//这个是我今天发现的方法
                 }
@@ -93,7 +93,7 @@ public class MixinWorldUtils {
                     side2 =d;
                     //墙上的告示牌，末地烛，避雷针，墙上的火把
                 }
-            }
+
             // Ctrl + Alt + V
             // 别用var 自动类型推导会降低程序可读性 好的，
 
@@ -221,6 +221,7 @@ public class MixinWorldUtils {
     private static void modify(Args args){
         if (side2!=null){
             args.set(1,side2);
+            side2=null;//虽然放置在地上的火把没有side属性,但是会受到数据包中错误的side字段的影响
         }
     }
 }
