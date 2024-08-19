@@ -102,29 +102,28 @@ public class MixinWorldUtils {
             // 尽量用确定的值去equals不确定的值，不确定的值有可能是null
             if (block == Blocks.OBSERVER ) {
                 pitch = switch (d) {
-                    case Direction.DOWN -> 90f;
-                    case Direction.UP -> -90f;
+                    case DOWN -> 90f;
+                    case UP -> -90f;
                     default -> 0f;
                 };
                 yaw = switch (d) {
                     // 我感觉你的idea需要先设置一下
-                    case Direction.SOUTH -> 0F;
-                    case  Direction.WEST-> 90F;
-                    case Direction.EAST -> -90F;
+                    case SOUTH -> 0F;
+                    case  WEST-> 90F;
+                    case EAST -> -90F;
                     default -> 180F;
                 };//这里不同的方块相对应的朝向有一些不同，侦测器和活塞是完全相反的，楼梯的话是只有上下不相反
             }
             else if (block instanceof StairsBlock||block instanceof FenceGateBlock ||block instanceof DoorBlock) {
                 pitch = switch (d) {
-                    case Direction.DOWN -> -90f;
-                    case Direction.UP -> 90f;
+                    case DOWN -> -90f;
+                    case UP -> 90f;
                     default -> 0f;
                 };
                 yaw = switch (d) {
-                    // 我感觉你的idea需要先设置一下
-                    case Direction.SOUTH -> 0F;
-                    case  Direction.WEST-> 90F;
-                    case Direction.EAST -> -90F;
+                    case SOUTH -> 0F;
+                    case  WEST-> 90F;
+                    case EAST -> -90F;
                     default -> 180F;
                 };
             }
@@ -132,9 +131,9 @@ public class MixinWorldUtils {
                 pitch = 0f;
                 yaw = switch (d) {
                     // 我感觉你的idea需要先设置一下
-                    case Direction.SOUTH -> -90F;
-                    case  Direction.WEST-> 180F;
-                    case Direction.EAST -> -180F;
+                    case SOUTH -> -90F;
+                    case WEST-> 180F;
+                    case EAST -> -180F;
                     default -> 90F;
                 };
             }
@@ -142,15 +141,14 @@ public class MixinWorldUtils {
 
             else {
                 pitch = switch (d) {
-                    case Direction.DOWN -> -90f;
-                    case Direction.UP -> 90f;
+                    case DOWN -> -90f;
+                    case UP -> 90f;
                     default -> 0f;
                 };
                 yaw = switch (d) {
-                    // 我感觉你的idea需要先设置一下
-                    case Direction.SOUTH -> 180F;
-                    case  Direction.WEST-> -90F;
-                    case Direction.EAST -> 90F;
+                    case SOUTH -> 180F;
+                    case WEST-> -90F;
+                    case EAST -> 90F;
                     default -> 0F;
                 };
                 if (block instanceof PistonBlock){
@@ -195,18 +193,18 @@ public class MixinWorldUtils {
                 pitch=-90f;
             }else {
                 yaw=switch (facing){
-                    case Direction.SOUTH -> 180F;
-                    case  Direction.WEST-> -90F;
-                    case Direction.EAST -> 90F;
+                    case SOUTH -> 180F;
+                    case WEST-> -90F;
+                    case EAST -> 90F;
                 default -> 0F;
                 };
                 pitch=90f;
             }
             if (yaw==0){
                 yaw=switch (rotation){
-                    case Direction.SOUTH -> 180F;
-                    case  Direction.WEST-> -90F;
-                    case Direction.EAST -> 90F;
+                    case SOUTH -> 180F;
+                    case WEST-> -90F;
+                    case EAST -> 90F;
                     default -> 0F;
                 };
 
