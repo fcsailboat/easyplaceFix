@@ -176,9 +176,9 @@ public class MixinWorldUtils {
               RailShape railShape= stateSchematic.get(Properties.RAIL_SHAPE);
             MinecraftClient minecraftClient = MinecraftClient.getInstance();
             if (railShape==RailShape.NORTH_SOUTH){
-                minecraftClient.getNetworkHandler().sendPacket(new PlayerMoveC2SPacket.LookAndOnGround(0f, 0f, true));
+                minecraftClient.getNetworkHandler().sendPacket(new PlayerMoveC2SPacket.LookAndOnGround(0f, 0f, mc.player.isOnGround()));
            }else{
-                minecraftClient.getNetworkHandler().sendPacket(new PlayerMoveC2SPacket.LookAndOnGround(90f, 0f, true));
+                minecraftClient.getNetworkHandler().sendPacket(new PlayerMoveC2SPacket.LookAndOnGround(90f, 0f, mc.player.isOnGround()));
            }
 
         }
