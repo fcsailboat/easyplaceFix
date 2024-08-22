@@ -4,6 +4,8 @@
   "package": "org.uiop.easyplacefix.Mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
+    "MixinConfigs",
+    "MixinHotkey",
     "MixinPistonBlock",
     "MixinWorldUtils"
   ],

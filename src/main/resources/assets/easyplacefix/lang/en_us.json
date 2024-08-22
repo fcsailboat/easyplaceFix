@@ -1,0 +1,6 @@
+{
+  "easyPlaceFix.config.hotkeys.comment.loosenmode": "EasyPlace the shortcut key Settings for loosen mode",
+  "easyPlaceFix.config.hotkeys.name.loosenmode": "loosenMode shortcut key",
+  "EasyPlaceFix.config.generic.comment.loosenMode": "Makes easyPlace more compatible with different variant for\n live panel trapdoor/stone_wall/coral_fan/fence gates",
+  "EasyPlaceFix.config.generic.name.loosenMode": "LoosenMode"
+}
