@@ -35,6 +35,7 @@ import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 import org.uiop.easyplacefix.EasyPlaceFix;
 import static org.uiop.easyplacefix.EasyPlaceFix.blockState;
 import static org.uiop.easyplacefix.EasyPlaceFix.findBlockInInventory;
+import static org.uiop.easyplacefix.config.easyPlacefixConfig.LOOSEN_MODE;
 
 
 @Mixin(WorldUtils.class)
@@ -209,7 +210,7 @@ public class MixinWorldUtils {
                     case EAST -> 90F;
                 default -> 0F;
                 };
-                pitch=90f;
+                pitch=0f;
             }
             if (yaw==0){
                 yaw=switch (rotation){
@@ -237,7 +238,7 @@ public class MixinWorldUtils {
     @Redirect(method = "doEasyPlaceAction", at = @At(value = "INVOKE", target = "Lfi/dy/masa/litematica/materials/MaterialCache;getRequiredBuildItemForState(Lnet/minecraft/block/BlockState;)Lnet/minecraft/item/ItemStack;"))
     private static ItemStack modifyGetRequiredBuildItemForState(MaterialCache instance, BlockState stateSchematic) {
         ItemStack stack = MaterialCache.getInstance().getRequiredBuildItemForState(stateSchematic); //覆盖方法返回值先调用原方法
-        if (EasyPlaceFix.generic) {
+        if (LOOSEN_MODE.getBooleanValue()) {
             if ( !EntityUtils.isCreativeMode(MinecraftClient.getInstance().player)){
                 PlayerInventory playerInventory =  MinecraftClient.getInstance().player.getInventory();
                 if (playerInventory.getSlotWithStack(stack)==-1){//如果找不到item对应的slot就进行替换
