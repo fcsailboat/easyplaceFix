@@ -196,31 +196,36 @@ public class MixinWorldUtils {
         }
         else if (stateSchematic.contains(Properties.ORIENTATION)) {
             Orientation orientation =stateSchematic.get(Properties.ORIENTATION);
-            float yaw = 0, pitch;
-            Direction facing= orientation.getFacing();
-            Direction  rotation  =orientation.getRotation();
-            if (facing==Direction.UP){
-                pitch=90f;
-            } else if (facing==Direction.DOWN) {
-                pitch=-90f;
-            }else {
-                yaw=switch (facing){
-                    case SOUTH -> 180F;
-                    case WEST-> -90F;
-                    case EAST -> 90F;
-                default -> 0F;
-                };
-                pitch=0f;
-            }
-            if (yaw==0){
-                yaw=switch (rotation){
-                    case SOUTH -> 180F;
-                    case WEST-> -90F;
-                    case EAST -> 90F;
-                    default -> 0F;
-                };
+            Direction facing= orientation.getFacing();//决定其是垂直还是水平(水平情况附带朝向)
+            Direction  rotation  =orientation.getRotation();//决定垂直情况下的朝向(水平情况均为UP)
+            float yaw;
+            float pitch = 0f;
+           switch (facing){
+                case UP ->{
+                    pitch=90f;
+                     yaw = switch (rotation){
+                        case SOUTH ->0F;
+                        case WEST-> 90F;
+                        case EAST -> -90F;
+                        default -> 180F;
+                    };
+                }case DOWN -> {
+                    pitch=-90f;
+                    yaw=switch (rotation){
+                        case SOUTH ->180F;
+                        case WEST-> -90F;
+                        case EAST -> 90F;
+                        default -> 0F;
+                    };
+               }
+               case SOUTH ->yaw=180F;
+               case WEST-> yaw=-90F;
+               case EAST -> yaw=90F;
+               default -> yaw=0F;
 
-            }
+
+           }
+
             MinecraftClient minecraftClient = MinecraftClient.getInstance();
             minecraftClient.getNetworkHandler().sendPacket(new PlayerMoveC2SPacket.LookAndOnGround(yaw, pitch, mc.player.isOnGround()));
         }
