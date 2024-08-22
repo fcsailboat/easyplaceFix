@@ -4,15 +4,19 @@ package org.uiop.easyplacefix;
 import net.fabricmc.api.ModInitializer;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
+
+
+import  org.uiop.easyplacefix.config.easyPlaceFixHotkeys;
 
 public class EasyPlaceFix implements ModInitializer {
     public static BlockState blockState =null;
     public  static boolean modifyBoolean =false;
-    public static boolean generic =false;
     @Override
     public void onInitialize() {
+        easyPlaceFixHotkeys.addCallbacks(MinecraftClient.getInstance());
     }
     public static  <T> ItemStack findBlockInInventory(PlayerInventory inv, Class<T> blockClass) {
         for (int slot = 0; slot < inv.size(); slot++) {
