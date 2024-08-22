@@ -2,15 +2,17 @@ package org.uiop.easyplacefix.Mixin;
 
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.sugar.Local;
+import fi.dy.masa.litematica.materials.MaterialCache;
+import fi.dy.masa.litematica.util.EntityUtils;
 import fi.dy.masa.litematica.util.RayTraceUtils;
 import fi.dy.masa.litematica.util.WorldUtils;
 import fi.dy.masa.litematica.world.SchematicWorldHandler;
 import fi.dy.masa.malilib.util.BlockUtils;
 import net.minecraft.block.*;
-import net.minecraft.block.enums.ComparatorMode;
-import net.minecraft.block.enums.Orientation;
-import net.minecraft.block.enums.RailShape;
+import net.minecraft.block.enums.*;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.item.ItemStack;
 import net.minecraft.network.packet.c2s.play.PlayerInteractBlockC2SPacket;
 import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
 import net.minecraft.state.property.DirectionProperty;
@@ -27,9 +29,12 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArgs;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 import org.uiop.easyplacefix.EasyPlaceFix;
+import static org.uiop.easyplacefix.EasyPlaceFix.blockState;
+import static org.uiop.easyplacefix.EasyPlaceFix.findBlockInInventory;
 
 
 @Mixin(WorldUtils.class)
@@ -89,6 +94,12 @@ public class MixinWorldUtils {
 
                 if (block ==Blocks.HOPPER){//漏斗
                     side2 = d.getOpposite();//这个是我今天发现的方法
+                }
+                else if (stateSchematic.contains(Properties.BLOCK_HALF)){
+                  BlockHalf blockHalf = stateSchematic.get(Properties.BLOCK_HALF);
+                  if (blockHalf==BlockHalf.BOTTOM){
+                      side2=Direction.UP;
+                  }else side2=Direction.DOWN;
                 }
                 else {
                     side2 =d;
@@ -152,8 +163,8 @@ public class MixinWorldUtils {
                     default -> 0F;
                 };
                 if (block instanceof PistonBlock){
-                    EasyPlaceFix.blockState =stateSchematic;
-                    EasyPlaceFix.modifyBoolean=true;
+                    blockState =stateSchematic;
+                   EasyPlaceFix.modifyBoolean=true;
                 }
             }
             MinecraftClient minecraftClient = MinecraftClient.getInstance();
@@ -223,4 +234,42 @@ public class MixinWorldUtils {
             side2=null;//虽然放置在地上的火把没有side属性,但是会受到数据包中错误的side字段的影响
         }
     }
+    @Redirect(method = "doEasyPlaceAction", at = @At(value = "INVOKE", target = "Lfi/dy/masa/litematica/materials/MaterialCache;getRequiredBuildItemForState(Lnet/minecraft/block/BlockState;)Lnet/minecraft/item/ItemStack;"))
+    private static ItemStack modifyGetRequiredBuildItemForState(MaterialCache instance, BlockState stateSchematic) {
+        ItemStack stack = MaterialCache.getInstance().getRequiredBuildItemForState(stateSchematic); //覆盖方法返回值先调用原方法
+        if (EasyPlaceFix.generic) {
+            if ( !EntityUtils.isCreativeMode(MinecraftClient.getInstance().player)){
+                PlayerInventory playerInventory =  MinecraftClient.getInstance().player.getInventory();
+                if (playerInventory.getSlotWithStack(stack)==-1){//如果找不到item对应的slot就进行替换
+                    Block ReplacedBlock = stateSchematic.getBlock();//将被替换的item对应的方块
+                    if ( ReplacedBlock instanceof  WallBlock) {  //墙类
+                        ItemStack replaceStack =  findBlockInInventory(playerInventory,WallBlock.class);
+                        if (replaceStack!=null)return replaceStack;
+                    }
+                    else if(ReplacedBlock instanceof FenceGateBlock){ //栅栏门
+                        ItemStack replaceStack =  findBlockInInventory(playerInventory,FenceGateBlock.class);
+                        if (replaceStack!=null)return replaceStack;
+                    }
+                    else if (ReplacedBlock instanceof TrapdoorBlock){//活板门
+                        ItemStack replaceStack =  findBlockInInventory(playerInventory,TrapdoorBlock.class);
+                        if (replaceStack!=null)return replaceStack;
+                    }
+                    else if (ReplacedBlock instanceof CoralFanBlock){//珊瑚扇
+                        ItemStack replaceStack =  findBlockInInventory(playerInventory,CoralFanBlock.class);
+                        if (replaceStack!=null)return replaceStack;
+                    }
+                }
+
+
+            }
+
+
+
+
+
+        }
+        return stack;
+    }
+
+
 }
