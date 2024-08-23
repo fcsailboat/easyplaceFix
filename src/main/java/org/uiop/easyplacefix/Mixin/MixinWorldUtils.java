@@ -58,6 +58,8 @@ public abstract class MixinWorldUtils {
             if (traceWrapper==null){
                 return original;
             }
+            if (stateSchematicRef.get()==null)return ActionResult.PASS;
+
             BlockHitResult trace = traceWrapper.getBlockHitResult();
             BlockState stateSchematic =stateSchematicRef.get();
               Block block =  stateSchematic.getBlock();
@@ -247,6 +249,8 @@ public abstract class MixinWorldUtils {
 
     @WrapOperation(method = "doEasyPlaceAction", at = @At(value = "INVOKE", target = "Lfi/dy/masa/litematica/materials/MaterialCache;getRequiredBuildItemForState(Lnet/minecraft/block/BlockState;)Lnet/minecraft/item/ItemStack;"))
     private static ItemStack modifyGetRequiredBuildItemForState(MaterialCache instance, BlockState stateSchematic, Operation<ItemStack> original, @Share("stateSchematic") LocalRef<BlockState> stateSchematicRef) {
+
+
         stateSchematicRef.set(stateSchematic);//设置一个共享的BlockState,用于在Mixin中共享对应的投影方块
         ItemStack stack = original.call(instance,stateSchematic); //覆盖方法返回值先调用原方法
         if (LOOSEN_MODE.getBooleanValue()) {
