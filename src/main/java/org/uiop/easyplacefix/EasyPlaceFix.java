@@ -11,6 +11,8 @@ import net.minecraft.item.ItemStack;
 
 import  org.uiop.easyplacefix.config.easyPlaceFixHotkeys;
 
+import java.util.function.Predicate;
+
 public class EasyPlaceFix implements ModInitializer {
     public static BlockState blockState =null;
     public  static boolean modifyBoolean =false;
@@ -18,16 +20,16 @@ public class EasyPlaceFix implements ModInitializer {
     public void onInitialize() {
         easyPlaceFixHotkeys.addCallbacks(MinecraftClient.getInstance());
     }
-    public static  <T> ItemStack findBlockInInventory(PlayerInventory inv, Class<T> blockClass) {
+    public static  <T> ItemStack findBlockInInventory(PlayerInventory inv, Predicate<Block> predicate) {
         for (int slot = 0; slot < inv.size(); slot++) {
             ItemStack stack = inv.getStack(slot);
             if (!stack.isEmpty()) {
                 Block block = Block.getBlockFromItem(stack.getItem());
-                if (blockClass.isInstance(block)) {
+                if (predicate.test(block)) {
                     return stack; // 找到满足条件的物品堆，返回其槽位
                 }
             }
         }
-        return null; // 如果没有找到，返回 -1
+        return null; // 如果没有找到，返回 null
     }
 }
