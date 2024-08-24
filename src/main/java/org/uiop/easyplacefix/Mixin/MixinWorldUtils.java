@@ -135,7 +135,7 @@ public abstract class MixinWorldUtils {
                     default -> 180F;
                 };//这里不同的方块相对应的朝向有一些不同，侦测器和活塞是完全相反的，楼梯的话是只有上下不相反
             }
-            else if (block instanceof StairsBlock||block instanceof FenceGateBlock ||block instanceof DoorBlock) {
+            else if (block instanceof StairsBlock||block instanceof FenceGateBlock ||block instanceof DoorBlock ||block instanceof LeverBlock) {
                 pitch = switch (d) {
                     case DOWN -> -90f;
                     case UP -> 90f;
