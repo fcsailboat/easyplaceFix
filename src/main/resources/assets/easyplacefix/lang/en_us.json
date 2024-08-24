@@ -2,5 +2,11 @@
   "easyPlaceFix.config.hotkeys.comment.loosenmode": "EasyPlace the shortcut key Settings for loosen mode",
   "easyPlaceFix.config.hotkeys.name.loosenmode": "loosenMode shortcut key",
   "EasyPlaceFix.config.generic.comment.loosenMode": "Makes easyPlace more compatible with different variant for\n live panel trapdoor/stone_wall/coral_fan/fence gates",
-  "EasyPlaceFix.config.generic.name.loosenMode": "LoosenMode"
+  "EasyPlaceFix.config.generic.name.loosenMode": "LoosenMode",
+  "EasyPlaceFix.config.generic.name.nbtIgnore": "easyPlaceIgnoreItemNBT",
+  "EasyPlaceFix.config.generic.comment.nbtIgnore": "easyPlace neglected inventory items NBT",
+  "easyPlaceFix.config.hotkeys.comment.nbtIgnore": "easyPlace NBT shortcuts for neglected inventory items",
+  "easyPlaceFix.config.hotkeys.name.nbtIgnore": "easyPlaceIgnoreItemNBT shortcut key"
+
+
 }

@@ -2,5 +2,11 @@
   "easyPlaceFix.config.hotkeys.comment.loosenmode": "轻松放置的宽容模式的快捷键设置",
   "easyPlaceFix.config.hotkeys.name.loosenmode": "宽容模式快捷键",
   "EasyPlaceFix.config.generic.comment.loosenMode": "使轻松放置对活板门/石墙/珊瑚扇/栅栏门的材质更加宽容",
-  "EasyPlaceFix.config.generic.name.loosenMode": "轻松放置宽容模式"
+  "EasyPlaceFix.config.generic.name.loosenMode": "轻松放置宽容模式",
+  "EasyPlaceFix.config.generic.name.nbtIgnore": "轻松放置忽视库存物品NBT",
+  "EasyPlaceFix.config.generic.comment.nbtIgnore": "轻松放置时忽视库存物品的NBT组件",
+  "easyPlaceFix.config.hotkeys.comment.nbtIgnore": "轻松放置忽视库存物品NBT的快捷键设置",
+  "easyPlaceFix.config.hotkeys.name.nbtIgnore": "轻松放置忽视库存物品NBT快捷键"
+
+
 }
