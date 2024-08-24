@@ -17,7 +17,10 @@ import net.minecraft.block.*;
 import net.minecraft.block.enums.*;
 import net.minecraft.client.MinecraftClient;
 
+
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
+
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.packet.c2s.play.PlayerInteractBlockC2SPacket;
 import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
@@ -249,36 +252,38 @@ public abstract class MixinWorldUtils {
 
     @WrapOperation(method = "doEasyPlaceAction", at = @At(value = "INVOKE", target = "Lfi/dy/masa/litematica/materials/MaterialCache;getRequiredBuildItemForState(Lnet/minecraft/block/BlockState;)Lnet/minecraft/item/ItemStack;"))
     private static ItemStack modifyGetRequiredBuildItemForState(MaterialCache instance, BlockState stateSchematic, Operation<ItemStack> original, @Share("stateSchematic") LocalRef<BlockState> stateSchematicRef) {
-
-
         stateSchematicRef.set(stateSchematic);//设置一个共享的BlockState,用于在Mixin中共享对应的投影方块
-        ItemStack stack = original.call(instance,stateSchematic); //覆盖方法返回值先调用原方法
-        if (LOOSEN_MODE.getBooleanValue()) {
-            if ( !EntityUtils.isCreativeMode(MinecraftClient.getInstance().player)){
-                if (!stack.isEmpty()){
+        return original.call(instance,stateSchematic);
+    }
 
-                    PlayerInventory playerInventory =  MinecraftClient.getInstance().player.getInventory();
-                            Block ReplacedBlock = stateSchematic.getBlock();//将被替换的item对应的方块
-                            Predicate<Block> predicate = null;
+    @WrapOperation(method = "doEasyPlaceAction",at = @At(value = "INVOKE", target = "Lfi/dy/masa/litematica/util/EntityUtils;getUsedHandForItem(Lnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/item/ItemStack;)Lnet/minecraft/util/Hand;"))
+    private static Hand e(PlayerEntity player, ItemStack stack, Operation<Hand> original,@Share("stateSchematic") LocalRef<BlockState> stateSchematicRef){
+       Hand hand= original.call(player,stack);
+       if (hand==null&& LOOSEN_MODE.getBooleanValue()){
+           if (!stack.isEmpty()){
+               if (!EntityUtils.isCreativeMode(player)){
+                   Block ReplacedBlock = stateSchematicRef.get().getBlock();//将被替换的item对应的方块
+                   Predicate<Block> predicate = null;
+                   if ( ReplacedBlock instanceof  WallBlock)   //墙类
+                       predicate =block -> block instanceof WallBlock;
+                   else if(ReplacedBlock instanceof FenceGateBlock)//栅栏门
+                       predicate =block -> block instanceof FenceGateBlock;
+                   else if (ReplacedBlock instanceof TrapdoorBlock)//活板门
+                       predicate =block -> block instanceof TrapdoorBlock ;
+                   else if (ReplacedBlock instanceof CoralFanBlock)//珊瑚扇
+                       predicate =block -> block instanceof CoralFanBlock;
 
-                            if ( ReplacedBlock instanceof  WallBlock)   //墙类
-                                predicate =block -> block instanceof WallBlock;
-                            else if(ReplacedBlock instanceof FenceGateBlock)//栅栏门
-                                predicate =block -> block instanceof FenceGateBlock;
-                            else if (ReplacedBlock instanceof TrapdoorBlock)//活板门
-                                predicate =block -> block instanceof TrapdoorBlock ;
-                            else if (ReplacedBlock instanceof CoralFanBlock)//珊瑚扇
-                                predicate =block -> block instanceof CoralFanBlock;
+                   if (predicate!=null){
+                       PlayerInventory playerInventory =  MinecraftClient.getInstance().player.getInventory();
 
-                            if (predicate!=null){
-                                if (playerInventory.getSlotWithStack(stack)==-1) {//如果找不到item对应的slot就进行替换
-                                  return findBlockInInventory(playerInventory,predicate);
-                                }
-                            }
-                }
-            }
-        }
-        return stack;
+                       return findBlockInInventory(playerInventory,predicate);
+
+                   }
+               }
+           }
+
+       }
+       return hand;
     }
 
 

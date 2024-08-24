@@ -9,6 +9,7 @@ import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 
 
+import net.minecraft.util.Hand;
 import  org.uiop.easyplacefix.config.easyPlaceFixHotkeys;
 
 import java.util.function.Predicate;
@@ -20,13 +21,14 @@ public class EasyPlaceFix implements ModInitializer {
     public void onInitialize() {
         easyPlaceFixHotkeys.addCallbacks(MinecraftClient.getInstance());
     }
-    public static  <T> ItemStack findBlockInInventory(PlayerInventory inv, Predicate<Block> predicate) {
+    public static Hand findBlockInInventory(PlayerInventory inv, Predicate<Block> predicate) {
         for (int slot = 0; slot < inv.size(); slot++) {
             ItemStack stack = inv.getStack(slot);
             if (!stack.isEmpty()) {
                 Block block = Block.getBlockFromItem(stack.getItem());
                 if (predicate.test(block)) {
-                    return stack; // 找到满足条件的物品堆，返回其槽位
+                    inv.main.set(slot, stack.copy());
+                    return Hand.MAIN_HAND; // 找到满足条件的物品堆，返回其槽位
                 }
             }
         }
