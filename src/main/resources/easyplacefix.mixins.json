@@ -6,6 +6,7 @@
   "mixins": [
     "MixinConfigs",
     "MixinHotkey",
+    "MixinInventoryUtils",
     "MixinPistonBlock",
     "MixinWorldUtils"
   ],
