@@ -52,8 +52,7 @@ import static org.uiop.easyplacefix.config.easyPlacefixConfig.LOOSEN_MODE;
 
 @Mixin(WorldUtils.class)
 public abstract class MixinWorldUtils {
-    @Unique
-    private static Direction side2 =null;
+
     @ModifyReturnValue(method = "doEasyPlaceAction",at = @At(value ="RETURN"))
     private static ActionResult ok(ActionResult original, @Local RayTraceUtils.RayTraceWrapper traceWrapper, @Share("stateSchematic")LocalRef<BlockState> stateSchematicRef){
         if (original!=ActionResult.FAIL){
@@ -95,7 +94,7 @@ public abstract class MixinWorldUtils {
         return original;
     }
     @Inject(method = "doEasyPlaceAction",at = @At(value = "INVOKE", target = "Lfi/dy/masa/litematica/util/WorldUtils;cacheEasyPlacePosition(Lnet/minecraft/util/math/BlockPos;)V",shift = At.Shift.AFTER))
-    private static void ex(MinecraftClient mc, CallbackInfoReturnable<ActionResult> cir, @Share("stateSchematic")LocalRef<BlockState> stateSchematicRef){
+    private static void ex(MinecraftClient mc, CallbackInfoReturnable<ActionResult> cir, @Share("stateSchematic")LocalRef<BlockState> stateSchematicRef,@Share("side2")LocalRef<Direction> side2){
        BlockState stateSchematic = stateSchematicRef.get(); //直接使用共享的值，不需要重新获取
         @Nullable DirectionProperty property = BlockUtils.getFirstDirectionProperty(stateSchematic);
         if (property != null) {
@@ -103,16 +102,22 @@ public abstract class MixinWorldUtils {
             Direction d = stateSchematic.get(property);
 
                 if (block ==Blocks.HOPPER){//漏斗
-                    side2 = d.getOpposite();//这个是我今天发现的方法
+                    side2.set(d.getOpposite()); //这个是我今天发现的方法
                 }
                 else if (stateSchematic.contains(Properties.BLOCK_HALF)){
                   BlockHalf blockHalf = stateSchematic.get(Properties.BLOCK_HALF);
-                  if (blockHalf==BlockHalf.BOTTOM){
-                      side2=Direction.UP;
-                  }else side2=Direction.DOWN;
+                  if (blockHalf==BlockHalf.BOTTOM)
+                      side2.set(Direction.UP);
+                  else side2.set(Direction.DOWN);
+                }
+                else if (stateSchematic.contains(Properties.BLOCK_FACE)){
+                    BlockFace blockFace = stateSchematic.get(Properties.BLOCK_FACE);
+                    if (blockFace ==BlockFace.FLOOR)side2.set(Direction.UP);
+                        else if (blockFace == BlockFace.CEILING)side2.set(Direction.DOWN);
+                        else side2.set(d);
                 }
                 else {
-                    side2 =d;
+                    side2.set(d);
                     //墙上的告示牌，末地烛，避雷针，墙上的火把
                 }
 
@@ -183,9 +188,9 @@ public abstract class MixinWorldUtils {
         else if(stateSchematic.contains(Properties.AXIS)){
             Direction.Axis axis =   stateSchematic.get(Properties.AXIS);
             if (axis.getType().getFacingCount()==4){
-                side2=Direction.EAST;
+                side2.set(Direction.EAST);
             }else{
-                side2=Direction.DOWN;
+                side2.set(Direction.DOWN);
 
             }
             //AXIS属性最终在数据包中仍然依靠face字段来判断
@@ -243,10 +248,10 @@ public abstract class MixinWorldUtils {
     }
 
     @ModifyArgs(method = "doEasyPlaceAction",at = @At(value = "INVOKE", target = "Lnet/minecraft/util/hit/BlockHitResult;<init>(Lnet/minecraft/util/math/Vec3d;Lnet/minecraft/util/math/Direction;Lnet/minecraft/util/math/BlockPos;Z)V"))
-    private static void modify(Args args){
-        if (side2!=null){
-            args.set(1,side2);
-            side2=null;//虽然放置在地上的火把没有side属性,但是会受到数据包中错误的side字段的影响
+    private static void modify(Args args,@Share("side2")LocalRef<Direction> side2){
+        if (side2.get()!=null){
+            args.set(1,side2.get());
+//            side2=null;//虽然放置在地上的火把没有side属性,但是会受到数据包中错误的side字段的影响
         }
     }
 
