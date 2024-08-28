@@ -15,7 +15,7 @@ import  org.uiop.easyplacefix.config.easyPlaceFixHotkeys;
 import java.util.function.Predicate;
 
 public class EasyPlaceFix implements ModInitializer {
-    public static BlockState blockState =null;
+    public static BlockState pistonBlockState =null;
     public  static boolean modifyBoolean =false;
     @Override
     public void onInitialize() {

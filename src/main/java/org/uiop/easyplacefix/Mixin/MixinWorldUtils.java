@@ -30,12 +30,12 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 
+import net.minecraft.util.math.Vec3d;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
-
-import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArgs;
@@ -45,7 +45,7 @@ import org.uiop.easyplacefix.EasyPlaceFix;
 
 import java.util.function.Predicate;
 
-import static org.uiop.easyplacefix.EasyPlaceFix.blockState;
+import static org.uiop.easyplacefix.EasyPlaceFix.pistonBlockState;
 import static org.uiop.easyplacefix.EasyPlaceFix.findBlockInInventory;
 import static org.uiop.easyplacefix.config.easyPlacefixConfig.LOOSEN_MODE;
 
@@ -178,7 +178,7 @@ public abstract class MixinWorldUtils {
                     default -> 0F;
                 };
                 if (block instanceof PistonBlock){
-                    blockState =stateSchematic;
+                    pistonBlockState =stateSchematic;
                    EasyPlaceFix.modifyBoolean=true;
                 }
             }
@@ -248,10 +248,13 @@ public abstract class MixinWorldUtils {
     }
 
     @ModifyArgs(method = "doEasyPlaceAction",at = @At(value = "INVOKE", target = "Lnet/minecraft/util/hit/BlockHitResult;<init>(Lnet/minecraft/util/math/Vec3d;Lnet/minecraft/util/math/Direction;Lnet/minecraft/util/math/BlockPos;Z)V"))
-    private static void modify(Args args,@Share("side2")LocalRef<Direction> side2){
+    private static void modify(Args args,@Share("side2")LocalRef<Direction> side2,@Share("blockPos")LocalRef<BlockPos> blockPosRef){
         if (side2.get()!=null){
             args.set(1,side2.get());
 //            side2=null;//虽然放置在地上的火把没有side属性,但是会受到数据包中错误的side字段的影响
+        }
+        if (blockPosRef.get()!=null){
+            args.set(2,blockPosRef.get());
         }
     }
 
@@ -289,6 +292,38 @@ public abstract class MixinWorldUtils {
 
        }
        return hand;
+    }
+    @WrapOperation(method = "doEasyPlaceAction",at = @At(value = "INVOKE", target = "Lfi/dy/masa/litematica/util/WorldUtils;applyBlockSlabProtocol(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;Lnet/minecraft/util/math/Vec3d;)Lnet/minecraft/util/math/Vec3d;"))
+    private static Vec3d slabFix(BlockPos pos, BlockState state, Vec3d hitVecIn, Operation<Vec3d> original,@Share("blockPos")LocalRef<BlockPos>blockPosRef){
+
+        if (state.contains(Properties.BLOCK_FACE)){
+          BlockFace face =  state.get(Properties.BLOCK_FACE);
+           double y2= pos.getY();
+           if (face==BlockFace.FLOOR&&state.getBlock()!=Blocks.GRINDSTONE){
+               blockPosRef.set(pos.add(0,-1,0));
+           }else if (face==BlockFace.CEILING&&state.getBlock()!=Blocks.GRINDSTONE){
+               blockPosRef.set(pos.add(0,1,0));
+           }else {
+               @Nullable DirectionProperty property = BlockUtils.getFirstDirectionProperty(state);
+               if (property!=null){
+                   switch ( state.get(property)){
+                       case EAST ->  blockPosRef.set(pos.add(-1,0,0));
+                       case WEST ->  blockPosRef.set(pos.add(1,0,0));
+                       case NORTH ->  blockPosRef.set(pos.add(0,0,1));
+                       case SOUTH ->  blockPosRef.set(pos.add(0,0,-1));
+                   }
+
+
+               }
+
+           }
+
+           return new Vec3d(hitVecIn.x,y2,hitVecIn.z);
+       }
+
+
+
+        return original.call(pos,state,hitVecIn);
     }
 
 
