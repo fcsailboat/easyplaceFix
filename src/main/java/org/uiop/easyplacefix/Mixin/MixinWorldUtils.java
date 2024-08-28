@@ -187,12 +187,11 @@ public abstract class MixinWorldUtils {
         }
         else if(stateSchematic.contains(Properties.AXIS)){
             Direction.Axis axis =   stateSchematic.get(Properties.AXIS);
-            if (axis.getType().getFacingCount()==4){
-                side2.set(Direction.EAST);
-            }else{
-                side2.set(Direction.DOWN);
-
-            }
+          switch (axis.ordinal()){
+              case 0->side2.set(Direction.EAST);//x
+              case 1->side2.set(Direction.DOWN);//y
+              case 2->side2.set(Direction.NORTH);//z
+          }
             //AXIS属性最终在数据包中仍然依靠face字段来判断
 
 
