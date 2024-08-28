@@ -47,12 +47,12 @@ import java.util.function.Predicate;
 
 import static org.uiop.easyplacefix.EasyPlaceFix.pistonBlockState;
 import static org.uiop.easyplacefix.EasyPlaceFix.findBlockInInventory;
+import static org.uiop.easyplacefix.config.easyPlacefixConfig.Allow_Interaction;
 import static org.uiop.easyplacefix.config.easyPlacefixConfig.LOOSEN_MODE;
 
 
 @Mixin(WorldUtils.class)
 public abstract class MixinWorldUtils {
-
     @ModifyReturnValue(method = "doEasyPlaceAction",at = @At(value ="RETURN"))
     private static ActionResult ok(ActionResult original, @Local RayTraceUtils.RayTraceWrapper traceWrapper, @Share("stateSchematic")LocalRef<BlockState> stateSchematicRef){
         if (original!=ActionResult.FAIL){
@@ -87,6 +87,11 @@ public abstract class MixinWorldUtils {
 //
 //             }没有很多地方会用到大量开启的拉杆
 
+
+        }else{
+            if (Allow_Interaction.getBooleanValue()&&MinecraftClient.getInstance().player.getMainHandStack().isEmpty()&&MinecraftClient.getInstance().player.getOffHandStack().isEmpty()){
+            return ActionResult.PASS;
+            }
 
         }
 
