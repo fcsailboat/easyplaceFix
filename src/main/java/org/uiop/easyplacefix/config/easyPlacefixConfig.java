@@ -13,6 +13,8 @@ public final class easyPlacefixConfig {
             new ConfigBoolean("nbtIgnore", false, "EasyPlaceFix.config.generic.comment.nbtIgnore");
     public static final ConfigBoolean Allow_Interaction =
             new ConfigBoolean("AllowInteraction", false, "EasyPlaceFix.config.generic.comment.AllowInteraction");
+//    public static final ConfigBoolean Chain_Mode =
+//            new ConfigBoolean("ChainMode", true, "EasyPlaceFix.config.generic.comment.ChainMode");
 
 
 

@@ -1,6 +1,7 @@
 package org.uiop.easyplacefix;
 
 
+import fi.dy.masa.litematica.util.InventoryUtils;
 import net.fabricmc.api.ModInitializer;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -27,7 +28,7 @@ public class EasyPlaceFix implements ModInitializer {
             if (!stack.isEmpty()) {
                 Block block = Block.getBlockFromItem(stack.getItem());
                 if (predicate.test(block)) {
-                    inv.main.set(slot, stack.copy());
+                    InventoryUtils.setPickedItemToHand(slot,stack,MinecraftClient.getInstance());
                     return Hand.MAIN_HAND; // 找到满足条件的物品堆，返回其槽位
                 }
             }
