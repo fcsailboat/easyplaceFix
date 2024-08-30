@@ -228,8 +228,8 @@ public abstract class MixinWorldUtils {
 
 
         }
-        else if (stateSchematic.contains(Properties.RAIL_SHAPE)) {
-              RailShape railShape= stateSchematic.get(Properties.RAIL_SHAPE);
+        else if (stateSchematic.contains(Properties.STRAIGHT_RAIL_SHAPE)) {//不能转弯的铁轨
+              RailShape railShape= stateSchematic.get(Properties.STRAIGHT_RAIL_SHAPE);
             MinecraftClient minecraftClient = MinecraftClient.getInstance();
             if (railShape==RailShape.NORTH_SOUTH){
                 minecraftClient.getNetworkHandler().sendPacket(new PlayerMoveC2SPacket.LookAndOnGround(0f, 0f, mc.player.isOnGround()));
@@ -237,8 +237,15 @@ public abstract class MixinWorldUtils {
                 minecraftClient.getNetworkHandler().sendPacket(new PlayerMoveC2SPacket.LookAndOnGround(90f, 0f, mc.player.isOnGround()));
            }
 
-        }
-        else if (stateSchematic.contains(Properties.ORIENTATION)) {
+        } else if (stateSchematic.contains(Properties.RAIL_SHAPE)) {//普通铁轨
+            RailShape railShape= stateSchematic.get(Properties.RAIL_SHAPE);
+            MinecraftClient minecraftClient = MinecraftClient.getInstance();
+            if (railShape==RailShape.NORTH_SOUTH){
+                minecraftClient.getNetworkHandler().sendPacket(new PlayerMoveC2SPacket.LookAndOnGround(0f, 0f, mc.player.isOnGround()));
+            }else{
+                minecraftClient.getNetworkHandler().sendPacket(new PlayerMoveC2SPacket.LookAndOnGround(90f, 0f, mc.player.isOnGround()));
+            }
+        } else if (stateSchematic.contains(Properties.ORIENTATION)) {
             Orientation orientation =stateSchematic.get(Properties.ORIENTATION);
             Direction facing= orientation.getFacing();//决定其是垂直还是水平(水平情况附带朝向)
             Direction  rotation  =orientation.getRotation();//决定垂直情况下的朝向(水平情况均为UP)
