@@ -22,7 +22,6 @@ import net.minecraft.block.enums.*;
 import net.minecraft.client.MinecraftClient;
 
 
-import net.minecraft.data.client.VariantSettings;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 
