@@ -22,6 +22,7 @@ import net.minecraft.block.enums.*;
 import net.minecraft.client.MinecraftClient;
 
 
+import net.minecraft.data.client.VariantSettings;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 
@@ -30,6 +31,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.network.packet.c2s.play.PlayerInteractBlockC2SPacket;
 import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
 import net.minecraft.state.property.DirectionProperty;
+import net.minecraft.state.property.IntProperty;
 import net.minecraft.state.property.Properties;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
@@ -171,7 +173,7 @@ public abstract class MixinWorldUtils {
                     default -> 180F;
                 };//这里不同的方块相对应的朝向有一些不同，侦测器和活塞是完全相反的，楼梯的话是只有上下不相反
             }
-            else if (block instanceof StairsBlock||block instanceof FenceGateBlock ||block instanceof DoorBlock ||block instanceof LeverBlock) {
+            else if (block instanceof StairsBlock||block instanceof FenceGateBlock ||block instanceof DoorBlock ||block instanceof LeverBlock ||block instanceof ButtonBlock||block instanceof BedBlock) {
                 pitch = switch (d) {
                     case DOWN -> -90f;
                     case UP -> 90f;
@@ -279,6 +281,10 @@ public abstract class MixinWorldUtils {
 
             MinecraftClient minecraftClient = MinecraftClient.getInstance();
             minecraftClient.getNetworkHandler().sendPacket(new PlayerMoveC2SPacket.LookAndOnGround(yaw, pitch, mc.player.isOnGround()));
+        }else if (stateSchematic.contains(Properties.ROTATION)){
+            Integer rotation =stateSchematic.get(Properties.ROTATION);
+            MinecraftClient minecraftClient = MinecraftClient.getInstance();
+            minecraftClient.getNetworkHandler().sendPacket(new PlayerMoveC2SPacket.LookAndOnGround(rotation*22.5f, 0f, mc.player.isOnGround()));
         }
 
 
