@@ -8,7 +8,11 @@
     "MixinHotkey",
     "MixinInventoryUtils",
     "MixinPistonBlock",
-    "MixinWorldUtils"
+    "MixinWorldUtils",
+    "packet.MixinCloseScreenS2CPacket",
+    "packet.MixinInventoryS2CPacket",
+    "packet.MixinOpenScreenS2CPacket",
+    "packet.MixinScreenHandlerPropertyUpdateS2CPacket"
   ],
   "client": [
   ],
