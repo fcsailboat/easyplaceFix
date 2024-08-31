@@ -15,9 +15,12 @@ import fi.dy.masa.litematica.util.EntityUtils;
 import fi.dy.masa.litematica.util.RayTraceUtils;
 import fi.dy.masa.litematica.util.WorldUtils;
 
+import fi.dy.masa.litematica.world.SchematicWorldHandler;
 import fi.dy.masa.malilib.util.BlockUtils;
 import net.minecraft.block.*;
 
+import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.block.entity.CrafterBlockEntity;
 import net.minecraft.block.enums.*;
 import net.minecraft.client.MinecraftClient;
 
@@ -31,6 +34,7 @@ import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.packet.c2s.play.PlayerInteractBlockC2SPacket;
 import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
+import net.minecraft.screen.PlayerScreenHandler;
 import net.minecraft.state.property.DirectionProperty;
 import net.minecraft.state.property.Properties;
 import net.minecraft.util.ActionResult;
@@ -48,12 +52,12 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.uiop.easyplacefix.EasyPlaceFix;
+import org.uiop.easyplacefix.until.PlayerChangeBlockstate;
 import org.uiop.easyplacefix.until.PlayerRotation;
 
 import java.util.function.Predicate;
 
-import static org.uiop.easyplacefix.EasyPlaceFix.pistonBlockState;
-import static org.uiop.easyplacefix.EasyPlaceFix.findBlockInInventory;
+import static org.uiop.easyplacefix.EasyPlaceFix.*;
 import static org.uiop.easyplacefix.config.easyPlacefixConfig.*;
 
 
@@ -76,7 +80,7 @@ public abstract class MixinWorldUtils {
         if (traceWrapper==null){
             return original;
         }
-        if (original!=ActionResult.FAIL){
+        if (original==ActionResult.SUCCESS){
             MinecraftClient mc = MinecraftClient.getInstance();
 
             if (stateSchematicRef.get()==null)return original;
@@ -87,9 +91,7 @@ public abstract class MixinWorldUtils {
 
              if (block ==Blocks.REPEATER){
                  int delay =   stateSchematic.get(Properties.DELAY);
-                 for (int i=0;i<delay-1;i++){
-                     mc.getNetworkHandler().sendPacket(new PlayerInteractBlockC2SPacket(Hand.MAIN_HAND,trace,i));
-                 }
+                 PlayerChangeBlockstate.InteractBlock(delay,trace);
              }else if (block instanceof TrapdoorBlock||block instanceof FenceGateBlock) {
                  boolean open = stateSchematic.get(Properties.OPEN);
                  if (open){
@@ -102,12 +104,28 @@ public abstract class MixinWorldUtils {
                     mc.getNetworkHandler().sendPacket(new PlayerInteractBlockC2SPacket(Hand.MAIN_HAND,trace,0));
                 }
              }
-//             else if (block ==Blocks.LEVER) {
-//
-//             }没有很多地方会用到大量开启的拉杆
+             else if (block ==Blocks.LEVER) {
+                 if (stateSchematic.get(Properties.POWERED)) mc.getNetworkHandler().sendPacket(new PlayerInteractBlockC2SPacket(Hand.MAIN_HAND,trace,0));
+             }//没有很多地方会用到大量开启的拉杆,但是拉杆往往是激活的
+             else if (block==Blocks.TURTLE_EGG) {
+               int eggCount =  stateSchematic.get(Properties.EGGS);
+                 PlayerChangeBlockstate.InteractBlock(eggCount,trace);
+             } else if (block==Blocks.SEA_PICKLE) {
+                 PlayerChangeBlockstate.InteractBlock(stateSchematic.get(Properties.PICKLES),trace);
+             }else if (stateSchematic.contains(Properties.ORIENTATION)){
+                 CrafterBlockEntity blockEntity = (CrafterBlockEntity) SchematicWorldHandler.getSchematicWorld().getBlockEntity(trace.getBlockPos());
+                 for (int i=0;i<9;i++){
+                   boolean isDisabled =  blockEntity.isSlotDisabled(i);
+                     crafterSlot.set(i,isDisabled);
+                     if (!crafterOperation&&isDisabled){
+                         crafterOperation=true;
+                     }
+                 }
 
+                 mc.getNetworkHandler().sendPacket(new PlayerInteractBlockC2SPacket(Hand.MAIN_HAND,trace,0));
+             }
 
-        }else{
+        }else if (original==ActionResult.FAIL){
 
             if (Allow_Interaction.getBooleanValue()){
                 if (MinecraftClient.getInstance().player.getMainHandStack().isEmpty()&&MinecraftClient.getInstance().player.getOffHandStack().isEmpty()){
@@ -378,18 +396,7 @@ public abstract class MixinWorldUtils {
 
         return original.call(pos,state,hitVecIn);
     }
-//    @WrapOperation(method = "doEasyPlaceAction",at = @At(value = "INVOKE", target = "Lfi/dy/masa/litematica/util/WorldUtils;applyPlacementProtocolAll(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;Lnet/minecraft/util/math/Vec3d;)Lfi/dy/masa/litematica/util/WorldUtils$PlacementProtocolData;"))
-//    private static WorldUtils.PlacementProtocolData ChainModify(BlockPos pos, BlockState state, Vec3d hitV, Operation<WorldUtils.PlacementProtocolData> original){
-////        if (state.contains(Properties.BLOCK_FACE)){
-////            switch (state.get(Properties.BLOCK_FACE)){
-////                case WALL ->{}
-////                case FLOOR -> {}
-////                case CEILING -> {}
-////            }
-////        }
-////        setSomeBlock(pos,state);
-//        return original.call(pos,state,hitV);
-//    }
+
 }
 
 

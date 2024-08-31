@@ -13,11 +13,16 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.Hand;
 import  org.uiop.easyplacefix.config.easyPlaceFixHotkeys;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.function.Predicate;
 
 public class EasyPlaceFix implements ModInitializer {
     public static BlockState pistonBlockState =null;
     public  static boolean modifyBoolean =false;
+    public static List<Boolean> crafterSlot = new ArrayList<>(Arrays.asList(false,false,false,false,false,false,false,false,false));
+    public  static boolean crafterOperation =false;
     @Override
     public void onInitialize() {
         easyPlaceFixHotkeys.addCallbacks(MinecraftClient.getInstance());
