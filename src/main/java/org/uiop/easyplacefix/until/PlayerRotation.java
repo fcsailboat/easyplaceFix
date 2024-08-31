@@ -63,6 +63,7 @@ public class PlayerRotation {
         double realHitVec3withX = HitPos.x - (double) blockPos.getX();
         double realHitVec3withY = HitPos.y - (double) blockPos.getY();
         double realHitVec3withZ = HitPos.z - (double) blockPos.getZ();
+
         if (realHitVec3withX > 1)//确保最终的hitPos合法 而数据包中hitPos的计算方法在net.minecraft.network.PacketByteBuf.writeBlockHitResult
             return new Vec3d((int) HitPos.x, HitPos.y, HitPos.z);
         else if (realHitVec3withX < 0)
@@ -77,6 +78,7 @@ public class PlayerRotation {
             return new Vec3d(HitPos.x, HitPos.y, (int) HitPos.z);
         else if (realHitVec3withZ < 0)
             return new Vec3d(HitPos.x, HitPos.y, blockPos.getZ());
+
         return HitPos;
     }
 }

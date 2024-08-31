@@ -37,7 +37,7 @@ public class MixinOpenScreenS2CPacket {
                 }
 
             }
-            crafterOperation = false;
+            crafterOperation = false;//TODO 整个操作有不同步风险，但是操作很快结束，暂时体现不出来
             clientPlayNetworkHandler.sendPacket(new CloseHandledScreenC2SPacket(screenId));
             return false;
         }

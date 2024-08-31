@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import static org.uiop.easyplacefix.EasyPlaceFix.crafterOperation;
 
 @Mixin(ScreenHandlerPropertyUpdateS2CPacket.class)
-public class MixinScreenHandlerPropertyUpdateS2CPacket {
+public class MixinScreenHandlerPropertyUpdateS2CPacket {//这是更新插槽状态的数据包
     @WrapWithCondition(
             method = "apply(Lnet/minecraft/network/listener/ClientPlayPacketListener;)V",
             at = @At(value = "INVOKE",

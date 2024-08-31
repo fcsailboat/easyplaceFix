@@ -122,6 +122,12 @@ public abstract class MixinWorldUtils {
                 }
 
                 mc.getNetworkHandler().sendPacket(new PlayerInteractBlockC2SPacket(Hand.MAIN_HAND, trace, 0));
+            } else if (block instanceof CandleBlock) {
+              int candles =  stateSchematic.get(Properties.CANDLES);
+              PlayerChangeBlockstate.InteractBlock(candles,trace);
+            } else if (block ==Blocks.CAKE) {
+                int bites = stateSchematic.get(Properties.BITES);
+                PlayerChangeBlockstate.InteractBlock(bites+1,trace);
             }
 
         } else if (original == ActionResult.FAIL) {
