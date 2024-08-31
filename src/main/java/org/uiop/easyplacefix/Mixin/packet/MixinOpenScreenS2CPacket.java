@@ -25,16 +25,16 @@ public class MixinOpenScreenS2CPacket {
             at = @At(value = "INVOKE",
                     target = "Lnet/minecraft/network/listener/ClientPlayPacketListener;" +
                             "onOpenScreen(Lnet/minecraft/network/packet/s2c/play/OpenScreenS2CPacket;)V"))
-    private boolean OpenScreenFail(ClientPlayPacketListener instance, OpenScreenS2CPacket openScreenS2CPacket){
-        if (crafterOperation){
+    private boolean OpenScreenFail(ClientPlayPacketListener instance, OpenScreenS2CPacket openScreenS2CPacket) {
+        if (crafterOperation) {
             ClientPlayNetworkHandler clientPlayNetworkHandler = MinecraftClient.getInstance().getNetworkHandler();
             int screenId = openScreenS2CPacket.getSyncId();
-            for (int slot=0;slot<crafterSlot.size();slot++){
-              boolean isDisable =  crafterSlot.get(slot);
-              if (isDisable){
-                  clientPlayNetworkHandler.sendPacket(new SlotChangedStateC2SPacket(slot,screenId, false));
-                  clientPlayNetworkHandler.sendPacket(new ClickSlotC2SPacket(screenId,screenId,slot,0,SlotActionType.PICKUP, ItemStack.EMPTY, new Int2ObjectOpenHashMap<>()));
-              }
+            for (int slot = 0; slot < crafterSlot.size(); slot++) {
+                boolean isDisable = crafterSlot.get(slot);
+                if (isDisable) {
+                    clientPlayNetworkHandler.sendPacket(new SlotChangedStateC2SPacket(slot, screenId, false));
+                    clientPlayNetworkHandler.sendPacket(new ClickSlotC2SPacket(screenId, screenId, slot, 0, SlotActionType.PICKUP, ItemStack.EMPTY, new Int2ObjectOpenHashMap<>()));
+                }
 
             }
             crafterOperation = false;

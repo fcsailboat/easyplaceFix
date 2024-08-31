@@ -5,6 +5,7 @@ import net.minecraft.network.listener.ClientPlayPacketListener;
 import net.minecraft.network.packet.s2c.play.ScreenHandlerPropertyUpdateS2CPacket;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
+
 import static org.uiop.easyplacefix.EasyPlaceFix.crafterOperation;
 
 @Mixin(ScreenHandlerPropertyUpdateS2CPacket.class)
@@ -15,7 +16,7 @@ public class MixinScreenHandlerPropertyUpdateS2CPacket {
                     target = "Lnet/minecraft/network/listener/ClientPlayPacketListener;" +
                             "onScreenHandlerPropertyUpdate(Lnet/minecraft/network/packet/s2c/play/ScreenHandlerPropertyUpdateS2CPacket;)V"
             ))
-    private boolean updateFail(ClientPlayPacketListener instance, ScreenHandlerPropertyUpdateS2CPacket screenHandlerPropertyUpdateS2CPacket){
+    private boolean updateFail(ClientPlayPacketListener instance, ScreenHandlerPropertyUpdateS2CPacket screenHandlerPropertyUpdateS2CPacket) {
         return !crafterOperation;
     }
 }

@@ -7,6 +7,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
 import static org.uiop.easyplacefix.EasyPlaceFix.crafterOperation;
+
 @Mixin(InventoryS2CPacket.class)
 public class MixinInventoryS2CPacket {
     @WrapWithCondition(
@@ -15,7 +16,7 @@ public class MixinInventoryS2CPacket {
                     target = "Lnet/minecraft/network/listener/ClientPlayPacketListener;" +
                             "onInventory(Lnet/minecraft/network/packet/s2c/play/InventoryS2CPacket;)V"
             ))
-    private boolean InventoryFail(ClientPlayPacketListener instance, InventoryS2CPacket inventoryS2CPacket){
+    private boolean InventoryFail(ClientPlayPacketListener instance, InventoryS2CPacket inventoryS2CPacket) {
         return !crafterOperation;
     }
 }
