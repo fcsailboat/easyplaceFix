@@ -22,6 +22,8 @@ import net.minecraft.block.enums.*;
 import net.minecraft.client.MinecraftClient;
 
 
+import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.client.network.ClientPlayerInteractionManager;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 
@@ -30,10 +32,10 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.network.packet.c2s.play.PlayerInteractBlockC2SPacket;
 import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
 import net.minecraft.state.property.DirectionProperty;
-import net.minecraft.state.property.IntProperty;
 import net.minecraft.state.property.Properties;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
+import net.minecraft.util.Pair;
 import net.minecraft.util.hit.BlockHitResult;
 
 import net.minecraft.util.math.BlockPos;
@@ -44,10 +46,9 @@ import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.ModifyArgs;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 import org.uiop.easyplacefix.EasyPlaceFix;
+import org.uiop.easyplacefix.until.PlayerRotation;
 
 import java.util.function.Predicate;
 
@@ -126,13 +127,12 @@ public abstract class MixinWorldUtils {
         return original;
     }
     @Inject(method = "doEasyPlaceAction",at = @At(value = "INVOKE", target = "Lfi/dy/masa/litematica/util/WorldUtils;cacheEasyPlacePosition(Lnet/minecraft/util/math/BlockPos;)V",shift = At.Shift.AFTER))
-    private static void ex(MinecraftClient mc, CallbackInfoReturnable<ActionResult> cir, @Share("stateSchematic")LocalRef<BlockState> stateSchematicRef,@Share("side2")LocalRef<Direction> side2){
+    private static void ex(MinecraftClient mc, CallbackInfoReturnable<ActionResult> cir, @Share("stateSchematic")LocalRef<BlockState> stateSchematicRef,@Share("side2")LocalRef<Direction> side2,@Share("hitVecIn")LocalRef<Vec3d>vec3dLocalRef){
        BlockState stateSchematic = stateSchematicRef.get(); //直接使用共享的值，不需要重新获取
         @Nullable DirectionProperty property = BlockUtils.getFirstDirectionProperty(stateSchematic);
         if (property != null) {
             Block block = stateSchematic.getBlock();
             Direction d = stateSchematic.get(property);
-
                 if (block ==Blocks.HOPPER){//漏斗
                     side2.set(d.getOpposite()); //这个是我今天发现的方法
                 }
@@ -171,19 +171,16 @@ public abstract class MixinWorldUtils {
                     case EAST -> -90F;
                     default -> 180F;
                 };//这里不同的方块相对应的朝向有一些不同，侦测器和活塞是完全相反的，楼梯的话是只有上下不相反
-            }
-            else if (block instanceof StairsBlock||block instanceof FenceGateBlock ||block instanceof DoorBlock ||block instanceof LeverBlock ||block instanceof ButtonBlock||block instanceof BedBlock) {
-                pitch = switch (d) {
-                    case DOWN -> -90f;
-                    case UP -> 90f;
-                    default -> 0f;
-                };
-                yaw = switch (d) {
-                    case SOUTH -> 0F;
-                    case  WEST-> 90F;
-                    case EAST -> -90F;
-                    default -> 180F;
-                };
+            } else if (block instanceof DoorBlock) {
+                Pair<Float,Float> playerRotation =  PlayerRotation.SameRotationWithDoor(d,stateSchematic.get(Properties.DOOR_HINGE),vec3dLocalRef);
+                yaw =playerRotation.getLeft();
+                pitch =playerRotation.getRight();
+            } else if
+            (block instanceof StairsBlock||block instanceof FenceGateBlock  ||block instanceof LeverBlock ||block instanceof ButtonBlock||block instanceof BedBlock)
+            {
+                Pair<Float,Float> playerRotation = PlayerRotation.SameRotation(d);
+                yaw =playerRotation.getLeft();
+                pitch =playerRotation.getRight();
             }
             else if (block ==Blocks.ANVIL) {
                 pitch = 0f;
@@ -289,15 +286,29 @@ public abstract class MixinWorldUtils {
 
     }
 
-    @ModifyArgs(method = "doEasyPlaceAction",at = @At(value = "INVOKE", target = "Lnet/minecraft/util/hit/BlockHitResult;<init>(Lnet/minecraft/util/math/Vec3d;Lnet/minecraft/util/math/Direction;Lnet/minecraft/util/math/BlockPos;Z)V"))
-    private static void modify(Args args,@Share("side2")LocalRef<Direction> side2,@Share("blockPos")LocalRef<BlockPos> blockPosRef){
-        if (side2.get()!=null){
-            args.set(1,side2.get());
-//            side2=null;//虽然放置在地上的火把没有side属性,但是会受到数据包中错误的side字段的影响
+    @WrapOperation(method = "doEasyPlaceAction",at = @At(value = "INVOKE", target = "Lnet/minecraft/client/network/ClientPlayerInteractionManager;interactBlock(Lnet/minecraft/client/network/ClientPlayerEntity;Lnet/minecraft/util/Hand;Lnet/minecraft/util/hit/BlockHitResult;)Lnet/minecraft/util/ActionResult;"))
+    private static ActionResult modifyHitResultArgs
+            (ClientPlayerInteractionManager instance, ClientPlayerEntity player, Hand hand, BlockHitResult hitResult, Operation<ActionResult> original,
+             @Share("side2")LocalRef<Direction> side2,
+             @Share("blockPos")LocalRef<BlockPos> blockPosRef,
+             @Share("hitVecIn")LocalRef<Vec3d>vec3dLocalRef
+            ){
+        if (vec3dLocalRef.get()!=null){
+            if (blockPosRef.get()!=null)
+                vec3dLocalRef.set(PlayerRotation.keepHitVec3safe(blockPosRef.get(),vec3dLocalRef.get()));
+            else
+                vec3dLocalRef.set(PlayerRotation.keepHitVec3safe(hitResult.getBlockPos(),vec3dLocalRef.get()));
+
         }
-        if (blockPosRef.get()!=null){
-            args.set(2,blockPosRef.get());
-        }
+        BlockHitResult blockHitResult2 =new BlockHitResult(
+                vec3dLocalRef.get()!=null?vec3dLocalRef.get():hitResult.getPos(),
+                side2.get()!=null?side2.get():hitResult.getSide(),
+                blockPosRef.get()!=null?blockPosRef.get():hitResult.getBlockPos(),
+                hitResult.isInsideBlock()
+        );
+        return original.call(instance,player,hand,blockHitResult2);
+
+
     }
 
     @WrapOperation(method = "doEasyPlaceAction", at = @At(value = "INVOKE", target = "Lfi/dy/masa/litematica/materials/MaterialCache;getRequiredBuildItemForState(Lnet/minecraft/block/BlockState;)Lnet/minecraft/item/ItemStack;"))
@@ -336,8 +347,8 @@ public abstract class MixinWorldUtils {
        return hand;
     }
     @WrapOperation(method = "doEasyPlaceAction",at = @At(value = "INVOKE", target = "Lfi/dy/masa/litematica/util/WorldUtils;applyBlockSlabProtocol(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;Lnet/minecraft/util/math/Vec3d;)Lnet/minecraft/util/math/Vec3d;"))
-    private static Vec3d slabFix(BlockPos pos, BlockState state, Vec3d hitVecIn, Operation<Vec3d> original,@Share("blockPos")LocalRef<BlockPos>blockPosRef){
-
+    private static Vec3d slabFix(BlockPos pos, BlockState state, Vec3d hitVecIn, Operation<Vec3d> original,@Share("blockPos")LocalRef<BlockPos>blockPosRef,@Share("hitVecIn")LocalRef<Vec3d>vec3dLocalRef){
+        vec3dLocalRef.set(hitVecIn);
         if (state.contains(Properties.BLOCK_FACE)){
           BlockFace face =  state.get(Properties.BLOCK_FACE);
            double y2= pos.getY();
