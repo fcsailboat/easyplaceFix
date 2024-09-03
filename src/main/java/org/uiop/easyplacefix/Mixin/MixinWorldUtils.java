@@ -65,7 +65,7 @@ public abstract class MixinWorldUtils {
         }
         if (original == ActionResult.FAIL) {
             if (Allow_Interaction.getBooleanValue()) {
-                BlockState blockState = stateSchematicRef.get();
+                BlockState blockState = MinecraftClient.getInstance().world.getBlockState(traceWrapper.getBlockHitResult().getBlockPos());
                 if (
                         MinecraftClient.getInstance().player.getMainHandStack().isEmpty()
                                 && (MinecraftClient.getInstance().player.getOffHandStack().isEmpty() ||
