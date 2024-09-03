@@ -8,8 +8,6 @@ import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
-
-
 import net.minecraft.util.Hand;
 import org.uiop.easyplacefix.config.easyPlaceFixHotkeys;
 
@@ -23,6 +21,9 @@ public class EasyPlaceFix implements ModInitializer {
     public static boolean modifyBoolean = false;
     public static List<Boolean> crafterSlot = new ArrayList<>(Arrays.asList(false, false, false, false, false, false, false, false, false));
     public static boolean crafterOperation = false;
+    public static Integer screenId;
+    public static boolean syn = true;
+    public static Runnable aaa;
 
     @Override
     public void onInitialize() {
@@ -42,4 +43,5 @@ public class EasyPlaceFix implements ModInitializer {
         }
         return null; // 如果没有找到，返回 null
     }
+
 }

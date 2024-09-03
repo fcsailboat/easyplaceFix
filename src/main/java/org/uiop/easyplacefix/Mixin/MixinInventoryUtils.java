@@ -15,7 +15,8 @@ import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 import static org.uiop.easyplacefix.config.easyPlacefixConfig.IGNORE_NBT;
 
 @Mixin(InventoryUtils.class)
-public class MixinInventoryUtils {
+public class MixinInventoryUtils {//这个Mixin的作用只是将轻松放置操作库存的时候比较item是否为目标item时忽略了组件(NBT),并将其作为新参数传入后续的调用
+
     @WrapOperation(method = "schematicWorldPickBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/PlayerInventory;getSlotWithStack(Lnet/minecraft/item/ItemStack;)I"))
     private static int getSlotWithNbtIgnore(PlayerInventory instance, ItemStack stack, Operation<Integer> original, @Share("ItemStackWithNbt") LocalRef<ItemStack> itemStackRef) {
         int slot = original.call(instance, stack);
@@ -29,6 +30,7 @@ public class MixinInventoryUtils {
         return slot;
     }
 
+    //TODO ModifyArgs对性能有影响似乎
     @ModifyArgs(method = "schematicWorldPickBlock", at = @At(value = "INVOKE", target = "Lfi/dy/masa/litematica/util/InventoryUtils;setPickedItemToHand(Lnet/minecraft/item/ItemStack;Lnet/minecraft/client/MinecraftClient;)V"))
     private static void SetNBT4SetPickedItemToHand(Args args, @Share("ItemStackWithNbt") LocalRef<ItemStack> itemStackRef) {
         if (itemStackRef.get() != null) args.set(0, itemStackRef.get());

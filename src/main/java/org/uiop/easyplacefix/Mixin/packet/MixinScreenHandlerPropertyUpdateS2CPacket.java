@@ -6,10 +6,11 @@ import net.minecraft.network.packet.s2c.play.ScreenHandlerPropertyUpdateS2CPacke
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
-import static org.uiop.easyplacefix.EasyPlaceFix.crafterOperation;
+import static org.uiop.easyplacefix.EasyPlaceFix.*;
 
 @Mixin(ScreenHandlerPropertyUpdateS2CPacket.class)
 public class MixinScreenHandlerPropertyUpdateS2CPacket {//这是更新插槽状态的数据包
+
     @WrapWithCondition(
             method = "apply(Lnet/minecraft/network/listener/ClientPlayPacketListener;)V",
             at = @At(value = "INVOKE",
@@ -17,6 +18,12 @@ public class MixinScreenHandlerPropertyUpdateS2CPacket {//这是更新插槽状�
                             "onScreenHandlerPropertyUpdate(Lnet/minecraft/network/packet/s2c/play/ScreenHandlerPropertyUpdateS2CPacket;)V"
             ))
     private boolean updateFail(ClientPlayPacketListener instance, ScreenHandlerPropertyUpdateS2CPacket screenHandlerPropertyUpdateS2CPacket) {
+        if (crafterOperation && syn) {
+            syn = false;
+            screenId = screenHandlerPropertyUpdateS2CPacket.getSyncId();
+            aaa.run();
+            return false;
+        }
         return !crafterOperation;
     }
 }
