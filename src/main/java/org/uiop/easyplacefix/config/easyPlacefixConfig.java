@@ -4,7 +4,7 @@ import fi.dy.masa.malilib.config.IConfigBase;
 import fi.dy.masa.malilib.config.options.ConfigBoolean;
 
 public final class easyPlacefixConfig {
-    public static final ConfigBoolean LOOSEN_MODE=
+    public static final ConfigBoolean LOOSEN_MODE =
             new ConfigBoolean("loosenMode", false, "EasyPlaceFix.config.generic.comment.loosenMode");
 
     public static final ConfigBoolean IGNORE_NBT =
@@ -15,11 +15,8 @@ public final class easyPlacefixConfig {
 //            new ConfigBoolean("ChainMode", true, "EasyPlaceFix.config.generic.comment.ChainMode");
 
 
-
-
-
     public static IConfigBase[] getExtraGenericConfigs() {
-        return new IConfigBase[] {
+        return new IConfigBase[]{
                 LOOSEN_MODE,
                 IGNORE_NBT,
                 Allow_Interaction,

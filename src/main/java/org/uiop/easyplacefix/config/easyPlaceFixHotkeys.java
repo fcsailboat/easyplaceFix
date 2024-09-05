@@ -6,14 +6,14 @@ import net.minecraft.client.MinecraftClient;
 
 public final class easyPlaceFixHotkeys {
     public static final ConfigHotkey LOOSEN_MODE_HOTKEY =
-            new ConfigHotkey("loosenModeHotkey","","easyPlaceFix.config.hotkeys.comment.loosenmode");
+            new ConfigHotkey("loosenModeHotkey", "", "easyPlaceFix.config.hotkeys.comment.loosenmode");
     public static final ConfigHotkey IGNORE_NBT_HOTKEY =
-            new ConfigHotkey("nbtIgnoreHotkey","","easyPlaceFix.config.hotkeys.comment.nbtIgnore");
+            new ConfigHotkey("nbtIgnoreHotkey", "", "easyPlaceFix.config.hotkeys.comment.nbtIgnore");
     public static final ConfigHotkey Allow_Interaction_HOTKEY =
-            new ConfigHotkey("AllowInteractionHotkey","","easyPlaceFix.config.hotkeys.comment.AllowInteraction");
+            new ConfigHotkey("AllowInteractionHotkey", "", "easyPlaceFix.config.hotkeys.comment.AllowInteraction");
 
     public static ConfigHotkey[] getExtraHotkeys() {
-        return new ConfigHotkey[] {
+        return new ConfigHotkey[]{
                 LOOSEN_MODE_HOTKEY,
                 IGNORE_NBT_HOTKEY,
                 Allow_Interaction_HOTKEY,
