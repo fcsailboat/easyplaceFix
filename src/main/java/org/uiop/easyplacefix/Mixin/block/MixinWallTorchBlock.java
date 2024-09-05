@@ -16,13 +16,14 @@ import org.uiop.easyplacefix.IBlock;
 
 @Mixin(WallTorchBlock.class)
 public abstract class MixinWallTorchBlock implements IBlock {
-    @Shadow
-    protected abstract boolean canPlaceAt(BlockState state, WorldView world, BlockPos pos);
+
+
+    @Shadow protected abstract boolean canPlaceAt(BlockState state, WorldView world, BlockPos pos);
 
     @Override
     public Pair<BlockHitResult, Integer> getHitResult(BlockState blockState, BlockPos blockPos) {
         Direction direction = blockState.get(Properties.HORIZONTAL_FACING);
-        return canPlaceAt(blockState, MinecraftClient.getInstance().world, blockPos) ?
+        return this.canPlaceAt(blockState, MinecraftClient.getInstance().world, blockPos) ?
                 new Pair<>(
                         new BlockHitResult(
                                 switch (direction) {

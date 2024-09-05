@@ -2,6 +2,7 @@ package org.uiop.easyplacefix.Mixin;
 
 
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
+import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
@@ -17,6 +18,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.network.ClientPlayerInteractionManager;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
@@ -26,6 +28,7 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.Pair;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.uiop.easyplacefix.EasyPlaceFix;
@@ -96,7 +99,9 @@ public abstract class MixinWorldUtils {
                                                     Hand hand,
                                                     BlockHitResult hitResult,
                                                     Operation<ActionResult> original,
-                                                    @Share("stateSchematic") LocalRef<BlockState> stateSchematicRef) {
+                                                    @Share("stateSchematic") LocalRef<BlockState> stateSchematicRef,
+                                                    @Local RayTraceUtils.RayTraceWrapper traceWrapper) {
+        BlockHitResult blockHitResultFirstOne =  traceWrapper.getBlockHitResult();
         MinecraftClient client = MinecraftClient.getInstance();
         ClientPlayNetworkHandler net = client.getNetworkHandler();
         ClientPlayerInteractionManager interactionManager = client.interactionManager;
@@ -106,7 +111,7 @@ public abstract class MixinWorldUtils {
         Pair<LookAt, LookAt> lookAtPair = ((IBlock) block).getYawAndPitch(blockState);
         if (lookAtPair != null)
             PlayerRotationAction.setServerBoundPlayerRotation(lookAtPair.getLeft().Value(), lookAtPair.getRight().Value());
-        Pair<BlockHitResult, Integer> blockHitResultIntegerPair = ((IBlock) block).getHitResult(blockState, hitResult.getBlockPos());
+        Pair<BlockHitResult, Integer> blockHitResultIntegerPair = ((IBlock) block).getHitResult(blockState, blockHitResultFirstOne.getBlockPos());
         if (blockHitResultIntegerPair == null) return ActionResult.FAIL;
         BlockHitResult blockHitResult = blockHitResultIntegerPair.getLeft();
         Vec3d vec3d = new Vec3d(
@@ -121,7 +126,7 @@ public abstract class MixinWorldUtils {
                 false
         );
 
-        BlockHitResult blockHitResult1 = offsetBlockhitResult.withBlockPos(hitResult.getBlockPos());
+//        BlockHitResult blockHitResult1 = offsetBlockhitResult.withBlockPos(hitResult.getBlockPos());
         if (blockState.getBlock() instanceof PistonBlock) {//TODO 了解interactBlock内部工作原理，改进这部分代码
             EasyPlaceFix.pistonBlockState = blockState;
             modifyBoolean = true;
@@ -142,7 +147,7 @@ public abstract class MixinWorldUtils {
 //            Thread.sleep(1000);
 //            net.sendPacket(new PlayerInteractBlockC2SPacket(Hand.MAIN_HAND,blockHitResult1,0));
 
-            interactionManager.interactBlock(player, hand, blockHitResult1);
+            interactionManager.interactBlock(player, hand, blockHitResultFirstOne);
 //            var BlockActionPacket = new PlayerInteractBlockC2SPacket(
 //                    Hand.MAIN_HAND,
 //                    blockHitResult1,
@@ -152,7 +157,7 @@ public abstract class MixinWorldUtils {
 //            net.sendPacket(BlockActionPacket);
             i++;
         }
-        ((IBlock) block).BlockAction(blockState, blockHitResult1);
+        ((IBlock) block).BlockAction(blockState, blockHitResultFirstOne);
         return ActionResult.SUCCESS;
 
 
@@ -207,13 +212,16 @@ public abstract class MixinWorldUtils {
         }
         return hand;
     }
-//@WrapOperation(method = "doEasyPlaceAction",at = @At(value = "INVOKE", target = "Lnet/minecraft/world/World;getBlockState(Lnet/minecraft/util/math/BlockPos;)Lnet/minecraft/block/BlockState;"))
-//    private static BlockState aa(World instance, BlockPos pos, Operation<BlockState> original) throws InterruptedException {
-//       BlockState blockState =  original.call(instance,pos);
-//     Block block=  blockState.getBlock();
-//
-//    return blockState;
-//}
+@WrapWithCondition(method = "doEasyPlaceAction",
+        at = @At(value = "INVOKE",
+                target = "Lfi/dy/masa/litematica/util/RayTraceUtils;" +
+                        "getRayTraceFromEntity(Lnet/minecraft/world/World;Lnet/minecraft/entity/Entity;ZD)" +
+                        "Lnet/minecraft/util/hit/HitResult;")
+)
+    private static boolean aa(World distance, Entity entityTmp, boolean optionalTmp, double i) {
+
+    return false;
+}
 
 }
 
