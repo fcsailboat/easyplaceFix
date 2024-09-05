@@ -105,13 +105,20 @@ public abstract class MixinWorldUtils {
         MinecraftClient client = MinecraftClient.getInstance();
         ClientPlayNetworkHandler net = client.getNetworkHandler();
         ClientPlayerInteractionManager interactionManager = client.interactionManager;
+
         ((IClientPlayerInteractionManager) interactionManager).syn();
+
         BlockState blockState = stateSchematicRef.get();
         Block block = blockState.getBlock();
+
+
         Pair<LookAt, LookAt> lookAtPair = ((IBlock) block).getYawAndPitch(blockState);
         if (lookAtPair != null)
             PlayerRotationAction.setServerBoundPlayerRotation(lookAtPair.getLeft().Value(), lookAtPair.getRight().Value());
-        Pair<BlockHitResult, Integer> blockHitResultIntegerPair = ((IBlock) block).getHitResult(blockState, blockHitResultFirstOne.getBlockPos());
+        Pair<BlockHitResult, Integer> blockHitResultIntegerPair =
+                ((IBlock) block).getHitResult(
+                blockState,
+                blockHitResultFirstOne.getBlockPos());
         if (blockHitResultIntegerPair == null) return ActionResult.FAIL;
         BlockHitResult blockHitResult = blockHitResultIntegerPair.getLeft();
         Vec3d vec3d = new Vec3d(
@@ -212,16 +219,16 @@ public abstract class MixinWorldUtils {
         }
         return hand;
     }
-@WrapWithCondition(method = "doEasyPlaceAction",
-        at = @At(value = "INVOKE",
-                target = "Lfi/dy/masa/litematica/util/RayTraceUtils;" +
-                        "getRayTraceFromEntity(Lnet/minecraft/world/World;Lnet/minecraft/entity/Entity;ZD)" +
-                        "Lnet/minecraft/util/hit/HitResult;")
-)
-    private static boolean aa(World distance, Entity entityTmp, boolean optionalTmp, double i) {
-
-    return false;
-}
+//@WrapWithCondition(method = "doEasyPlaceAction",
+//        at = @At(value = "INVOKE",
+//                target = "Lfi/dy/masa/litematica/util/RayTraceUtils;" +
+//                        "getRayTraceFromEntity(Lnet/minecraft/world/World;Lnet/minecraft/entity/Entity;ZD)" +
+//                        "Lnet/minecraft/util/hit/HitResult;")
+//)
+//    private static boolean aa(World distance, Entity entityTmp, boolean optionalTmp, double i) {
+//
+//    return false;
+//}
 
 }
 
