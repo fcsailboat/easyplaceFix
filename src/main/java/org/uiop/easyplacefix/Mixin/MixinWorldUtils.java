@@ -17,7 +17,6 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.network.ClientPlayerInteractionManager;
-import net.minecraft.component.DataComponentTypes;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
@@ -68,8 +67,9 @@ public abstract class MixinWorldUtils {
                 BlockState blockState = MinecraftClient.getInstance().world.getBlockState(traceWrapper.getBlockHitResult().getBlockPos());
                 if (
                         MinecraftClient.getInstance().player.getMainHandStack().isEmpty()
-                                && (MinecraftClient.getInstance().player.getOffHandStack().isEmpty() ||
-                                MinecraftClient.getInstance().player.getOffHandStack().get(DataComponentTypes.CAN_PLACE_ON) == null)
+                                && (MinecraftClient.getInstance().player.getOffHandStack().isEmpty()
+//                                MinecraftClient.getInstance().player.getOffHandStack().get(DataComponentTypes.CAN_PLACE_ON) == null
+                        )
                 ) {
                     return ActionResult.PASS;
                 }
@@ -96,9 +96,9 @@ public abstract class MixinWorldUtils {
                                                     Hand hand,
                                                     BlockHitResult hitResult,
                                                     Operation<ActionResult> original,
-                                                    @Share("stateSchematic") LocalRef<BlockState> stateSchematicRef) {
+                                                    @Share("stateSchematic") LocalRef<BlockState> stateSchematicRef) throws InterruptedException {
         MinecraftClient client = MinecraftClient.getInstance();
-        ClientPlayNetworkHandler net = client.getNetworkHandler();
+//        ClientPlayNetworkHandler net = client.getNetworkHandler();
         ClientPlayerInteractionManager interactionManager = client.interactionManager;
         ((IClientPlayerInteractionManager) interactionManager).syn();
         BlockState blockState = stateSchematicRef.get();
@@ -109,22 +109,23 @@ public abstract class MixinWorldUtils {
         Pair<BlockHitResult, Integer> blockHitResultIntegerPair = ((IBlock) block).getHitResult(blockState, hitResult.getBlockPos());
         if (blockHitResultIntegerPair == null) return ActionResult.FAIL;
         BlockHitResult blockHitResult = blockHitResultIntegerPair.getLeft();
-        BlockHitResult blockHitResult1 = blockHitResult.withBlockPos(hitResult.getBlockPos());
-
-        Vec3d vec3d = new Vec3d(blockHitResult.getBlockPos().getX() + blockHitResult.getPos().x,
+        Vec3d vec3d = new Vec3d(
+                blockHitResult.getBlockPos().getX() + blockHitResult.getPos().x,
                 blockHitResult.getBlockPos().getY() + blockHitResult.getPos().y,
                 blockHitResult.getBlockPos().getZ() + blockHitResult.getPos().z
         );
-        BlockHitResult blockHitResult2 = new BlockHitResult(vec3d,
+        BlockHitResult offsetBlockhitResult = new BlockHitResult(vec3d,
                 blockHitResult.getSide(),
-                blockHitResult1.getBlockPos(),
+                blockHitResult.getBlockPos(),
                 false
         );
+
+        BlockHitResult blockHitResult1 = offsetBlockhitResult.withBlockPos(hitResult.getBlockPos());
         if (blockState.getBlock() instanceof PistonBlock) {//TODO 了解interactBlock内部工作原理，改进这部分代码
             EasyPlaceFix.pistonBlockState = blockState;
             modifyBoolean = true;
         }
-        interactionManager.interactBlock(player, hand, blockHitResult2);
+        interactionManager.interactBlock(player, hand, offsetBlockhitResult);
 //        var PlayerInteractBlockPacket = new PlayerInteractBlockC2SPacket(
 //                Hand.MAIN_HAND,
 //                blockHitResult,
@@ -135,6 +136,9 @@ public abstract class MixinWorldUtils {
 //        ((IClientPlayerInteractionManager) interactionManager).syn2(player,hand,hitResult);
         int i = 1;
         while (i < blockHitResultIntegerPair.getRight()) {
+//            Thread.sleep(1000);
+//            net.sendPacket(new PlayerInteractBlockC2SPacket(Hand.MAIN_HAND,blockHitResult1,0));
+
             interactionManager.interactBlock(player, hand, blockHitResult1);
 //            var BlockActionPacket = new PlayerInteractBlockC2SPacket(
 //                    Hand.MAIN_HAND,

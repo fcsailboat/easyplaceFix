@@ -1,8 +1,6 @@
 package org.uiop.easyplacefix.config;
 
-import fi.dy.masa.malilib.MaLiLibConfigs;
 import fi.dy.masa.malilib.config.IConfigBase;
-import fi.dy.masa.malilib.config.options.ConfigBase;
 import fi.dy.masa.malilib.config.options.ConfigBoolean;
 
 public final class easyPlacefixConfig {
