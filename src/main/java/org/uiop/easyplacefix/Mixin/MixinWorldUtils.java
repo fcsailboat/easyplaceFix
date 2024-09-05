@@ -96,9 +96,9 @@ public abstract class MixinWorldUtils {
                                                     Hand hand,
                                                     BlockHitResult hitResult,
                                                     Operation<ActionResult> original,
-                                                    @Share("stateSchematic") LocalRef<BlockState> stateSchematicRef) throws InterruptedException {
+                                                    @Share("stateSchematic") LocalRef<BlockState> stateSchematicRef) {
         MinecraftClient client = MinecraftClient.getInstance();
-//        ClientPlayNetworkHandler net = client.getNetworkHandler();
+        ClientPlayNetworkHandler net = client.getNetworkHandler();
         ClientPlayerInteractionManager interactionManager = client.interactionManager;
         ((IClientPlayerInteractionManager) interactionManager).syn();
         BlockState blockState = stateSchematicRef.get();
@@ -114,7 +114,8 @@ public abstract class MixinWorldUtils {
                 blockHitResult.getBlockPos().getY() + blockHitResult.getPos().y,
                 blockHitResult.getBlockPos().getZ() + blockHitResult.getPos().z
         );
-        BlockHitResult offsetBlockhitResult = new BlockHitResult(vec3d,
+        BlockHitResult offsetBlockhitResult = new BlockHitResult(
+                vec3d,
                 blockHitResult.getSide(),
                 blockHitResult.getBlockPos(),
                 false
@@ -125,15 +126,17 @@ public abstract class MixinWorldUtils {
             EasyPlaceFix.pistonBlockState = blockState;
             modifyBoolean = true;
         }
+
         interactionManager.interactBlock(player, hand, offsetBlockhitResult);
+//        ((IClientPlayerInteractionManager) interactionManager).syn2(player,hand,blockHitResult1);
 //        var PlayerInteractBlockPacket = new PlayerInteractBlockC2SPacket(
 //                Hand.MAIN_HAND,
 //                blockHitResult,
 //                ((IClientWorld) client.world).Sequence()
 //        );
 //        ((IisSimpleHitPos) PlayerInteractBlockPacket).setSimpleHitPos();
+
 //        net.sendPacket(PlayerInteractBlockPacket);
-//        ((IClientPlayerInteractionManager) interactionManager).syn2(player,hand,hitResult);
         int i = 1;
         while (i < blockHitResultIntegerPair.getRight()) {
 //            Thread.sleep(1000);
@@ -204,7 +207,13 @@ public abstract class MixinWorldUtils {
         }
         return hand;
     }
-
+//@WrapOperation(method = "doEasyPlaceAction",at = @At(value = "INVOKE", target = "Lnet/minecraft/world/World;getBlockState(Lnet/minecraft/util/math/BlockPos;)Lnet/minecraft/block/BlockState;"))
+//    private static BlockState aa(World instance, BlockPos pos, Operation<BlockState> original) throws InterruptedException {
+//       BlockState blockState =  original.call(instance,pos);
+//     Block block=  blockState.getBlock();
+//
+//    return blockState;
+//}
 
 }
 

@@ -20,7 +20,9 @@ import org.uiop.easyplacefix.IBlock;
 
 @Mixin(ChestBlock.class)
 public class MixinChestBlock implements IBlock {
-    @Shadow @Final public static EnumProperty<ChestType> CHEST_TYPE;
+    @Shadow
+    @Final
+    public static EnumProperty<ChestType> CHEST_TYPE;
 
     @Override
     public Pair<BlockHitResult, Integer> getHitResult(BlockState blockState, BlockPos blockPos) {
@@ -36,14 +38,14 @@ public class MixinChestBlock implements IBlock {
                     blockPos, false
             ), 1);
         }
-        Direction blockFace=blockState.get(Properties.HORIZONTAL_FACING);
+        Direction blockFace = blockState.get(Properties.HORIZONTAL_FACING);
 
-        if (chestType==ChestType.LEFT){
-             blockFace = blockFace.rotateYCounterclockwise();
-        }else{
-             blockFace = blockFace.rotateYClockwise();
+        if (chestType == ChestType.LEFT) {
+            blockFace = blockFace.rotateYCounterclockwise();
+        } else {
+            blockFace = blockFace.rotateYClockwise();
         }
-        BlockPos offset =  blockPos.offset(blockFace.getOpposite());
+        BlockPos offset = blockPos.offset(blockFace.getOpposite());
         MinecraftClient.getInstance().getNetworkHandler().sendPacket(new ClientCommandC2SPacket(
                 MinecraftClient.getInstance().player, ClientCommandC2SPacket.Mode.PRESS_SHIFT_KEY
         ));
@@ -57,7 +59,7 @@ public class MixinChestBlock implements IBlock {
                 blockFace,
                 MinecraftClient.getInstance().world.
                         getBlockState(offset).
-                        getBlock()== Blocks.AIR ?blockPos:offset
+                        getBlock() == Blocks.AIR ? blockPos : offset
                 , false
         ), 1);
 
@@ -68,9 +70,9 @@ public class MixinChestBlock implements IBlock {
     public void BlockAction(BlockState blockState, BlockHitResult blockHitResult) {
 
 
-            MinecraftClient.getInstance().getNetworkHandler().sendPacket(new ClientCommandC2SPacket(
-                    MinecraftClient.getInstance().player, ClientCommandC2SPacket.Mode.RELEASE_SHIFT_KEY
-            ));
+        MinecraftClient.getInstance().getNetworkHandler().sendPacket(new ClientCommandC2SPacket(
+                MinecraftClient.getInstance().player, ClientCommandC2SPacket.Mode.RELEASE_SHIFT_KEY
+        ));
 
     }
 }

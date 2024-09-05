@@ -10,6 +10,7 @@ import static org.uiop.easyplacefix.EasyPlaceFix.crafterOperation;
 
 @Mixin(CloseScreenS2CPacket.class)
 public class MixinCloseScreenS2CPacket {//这是服务端强制关闭窗口的数据包
+
     @WrapWithCondition(
             method = "apply(Lnet/minecraft/network/listener/ClientPlayPacketListener;)V",
             at = @At(value = "INVOKE",
