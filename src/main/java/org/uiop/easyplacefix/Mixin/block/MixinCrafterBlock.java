@@ -63,7 +63,8 @@ public class MixinCrafterBlock implements IBlock {
                 crafterOperation = true;
             }
         }
-        MinecraftClient.getInstance().interactionManager.interactBlock(MinecraftClient.getInstance().player, Hand.MAIN_HAND, blockHitResult);
+        if (crafterOperation)
+            MinecraftClient.getInstance().interactionManager.interactBlock(MinecraftClient.getInstance().player, Hand.MAIN_HAND, blockHitResult);
         aaa = () -> {
             int screenId = EasyPlaceFix.screenId;
             for (int slot = 0; slot < crafterSlot.size(); slot++) {
