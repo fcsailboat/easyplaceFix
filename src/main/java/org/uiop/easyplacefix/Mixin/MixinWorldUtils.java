@@ -2,7 +2,6 @@ package org.uiop.easyplacefix.Mixin;
 
 
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
-import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
@@ -18,27 +17,27 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.network.ClientPlayerInteractionManager;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
+import net.minecraft.network.packet.c2s.play.PlayerInteractBlockC2SPacket;
+import net.minecraft.network.packet.c2s.play.PlayerInteractItemC2SPacket;
+import net.minecraft.state.property.Properties;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Pair;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import org.uiop.easyplacefix.EasyPlaceFix;
-import org.uiop.easyplacefix.IBlock;
-import org.uiop.easyplacefix.IClientPlayerInteractionManager;
-import org.uiop.easyplacefix.LookAt;
+import org.uiop.easyplacefix.*;
 import org.uiop.easyplacefix.until.PlayerRotationAction;
 
 import java.util.function.Predicate;
 
+import static fi.dy.masa.litematica.util.InventoryUtils.schematicWorldPickBlock;
 import static org.uiop.easyplacefix.EasyPlaceFix.findBlockInInventory;
 import static org.uiop.easyplacefix.EasyPlaceFix.modifyBoolean;
 import static org.uiop.easyplacefix.config.easyPlacefixConfig.Allow_Interaction;
@@ -55,6 +54,8 @@ public abstract class MixinWorldUtils {
             return ActionResult.FAIL;
         }
 
+
+
         return original.call(mc);
     }
 
@@ -66,6 +67,32 @@ public abstract class MixinWorldUtils {
             return original;
         }
         if (original == ActionResult.FAIL) {
+
+//                if (stateSchematicRef.get()!=null){
+//                    BlockState blockState =stateSchematicRef.get();
+//                    if (blockState.contains(Properties.WATERLOGGED)){
+//                        if (blockState.get(Properties.WATERLOGGED)){
+//                            ItemStack itemStack1= MinecraftClient.getInstance().player.getMainHandStack();
+//                            ItemStack itemStack2= MinecraftClient.getInstance().player.getOffHandStack();
+//                            PlayerEntity player=MinecraftClient.getInstance().player;
+//                            if (itemStack1.getItem()== Items.WATER_BUCKET){
+//                                MinecraftClient.getInstance().getNetworkHandler().sendPacket(new PlayerInteractItemC2SPacket(
+//                                        Hand.MAIN_HAND,0,player.headYaw,player.getPitch()
+//                                ));
+//                                return ActionResult.SUCCESS;
+//                            }
+//                            if (itemStack2.getItem()==Items.WATER_BUCKET){
+//                                MinecraftClient.getInstance().getNetworkHandler().sendPacket(new PlayerInteractItemC2SPacket(
+//                                        Hand.OFF_HAND,0,player.headYaw,player.getPitch()
+//                                ));
+//                                return ActionResult.SUCCESS;
+//                            }
+//                            schematicWorldPickBlock(Items.WATER_BUCKET.getDefaultStack(),traceWrapper.getBlockHitResult().getBlockPos(), MinecraftClient.getInstance().world, MinecraftClient.getInstance());
+//                        }
+//                    }
+//                }这是含水方块放置的代码，还缺少炼药锅岩浆
+
+
             if (Allow_Interaction.getBooleanValue()) {
                 BlockState blockState = MinecraftClient.getInstance().world.getBlockState(traceWrapper.getBlockHitResult().getBlockPos());
                 if (
@@ -100,26 +127,28 @@ public abstract class MixinWorldUtils {
                                                     BlockHitResult hitResult,
                                                     Operation<ActionResult> original,
                                                     @Share("stateSchematic") LocalRef<BlockState> stateSchematicRef,
-                                                    @Local RayTraceUtils.RayTraceWrapper traceWrapper) {
-        BlockHitResult blockHitResultFirstOne =  traceWrapper.getBlockHitResult();
+                                                    @Local RayTraceUtils.RayTraceWrapper traceWrapper) throws InterruptedException {
+        BlockHitResult blockHitResultFirstOne = traceWrapper.getBlockHitResult();
         MinecraftClient client = MinecraftClient.getInstance();
         ClientPlayNetworkHandler net = client.getNetworkHandler();
         ClientPlayerInteractionManager interactionManager = client.interactionManager;
 
-        ((IClientPlayerInteractionManager) interactionManager).syn();
 
         BlockState blockState = stateSchematicRef.get();
         Block block = blockState.getBlock();
-
-
         Pair<LookAt, LookAt> lookAtPair = ((IBlock) block).getYawAndPitch(blockState);
-        if (lookAtPair != null)
+        if (lookAtPair != null) {
             PlayerRotationAction.setServerBoundPlayerRotation(lookAtPair.getLeft().Value(), lookAtPair.getRight().Value());
+        }
+
+
+
+        ((IClientPlayerInteractionManager) interactionManager).syn();//同步快捷栏的选择框
         Pair<BlockHitResult, Integer> blockHitResultIntegerPair =
                 ((IBlock) block).getHitResult(
-                blockState,
-                blockHitResultFirstOne.getBlockPos());
-        if (blockHitResultIntegerPair == null) return ActionResult.FAIL;
+                        blockState,
+                        blockHitResultFirstOne.getBlockPos());
+        if (blockHitResultIntegerPair == null) return ActionResult.FAIL;//获取操作数据(blockHitResult)
         BlockHitResult blockHitResult = blockHitResultIntegerPair.getLeft();
         Vec3d vec3d = new Vec3d(
                 blockHitResult.getBlockPos().getX() + blockHitResult.getPos().x,
@@ -132,39 +161,19 @@ public abstract class MixinWorldUtils {
                 blockHitResult.getBlockPos(),
                 false
         );
-
-//        BlockHitResult blockHitResult1 = offsetBlockhitResult.withBlockPos(hitResult.getBlockPos());
         if (blockState.getBlock() instanceof PistonBlock) {//TODO 了解interactBlock内部工作原理，改进这部分代码
             EasyPlaceFix.pistonBlockState = blockState;
             modifyBoolean = true;
         }
 
         interactionManager.interactBlock(player, hand, offsetBlockhitResult);
-//        ((IClientPlayerInteractionManager) interactionManager).syn2(player,hand,blockHitResult1);
-//        var PlayerInteractBlockPacket = new PlayerInteractBlockC2SPacket(
-//                Hand.MAIN_HAND,
-//                blockHitResult,
-//                ((IClientWorld) client.world).Sequence()
-//        );
-//        ((IisSimpleHitPos) PlayerInteractBlockPacket).setSimpleHitPos();
-
-//        net.sendPacket(PlayerInteractBlockPacket);
         int i = 1;
         while (i < blockHitResultIntegerPair.getRight()) {
-//            Thread.sleep(1000);
-//            net.sendPacket(new PlayerInteractBlockC2SPacket(Hand.MAIN_HAND,blockHitResult1,0));
-
             interactionManager.interactBlock(player, hand, blockHitResultFirstOne);
-//            var BlockActionPacket = new PlayerInteractBlockC2SPacket(
-//                    Hand.MAIN_HAND,
-//                    blockHitResult1,
-//                    ((IClientWorld) client.world).Sequence()
-//            );
-//            ((IisSimpleHitPos) BlockActionPacket).setSimpleHitPos();
-//            net.sendPacket(BlockActionPacket);
             i++;
         }
         ((IBlock) block).BlockAction(blockState, blockHitResultFirstOne);
+//        if (blockState.get(Pro))
         return ActionResult.SUCCESS;
 
 
@@ -219,16 +228,6 @@ public abstract class MixinWorldUtils {
         }
         return hand;
     }
-//@WrapWithCondition(method = "doEasyPlaceAction",
-//        at = @At(value = "INVOKE",
-//                target = "Lfi/dy/masa/litematica/util/RayTraceUtils;" +
-//                        "getRayTraceFromEntity(Lnet/minecraft/world/World;Lnet/minecraft/entity/Entity;ZD)" +
-//                        "Lnet/minecraft/util/hit/HitResult;")
-//)
-//    private static boolean aa(World distance, Entity entityTmp, boolean optionalTmp, double i) {
-//
-//    return false;
-//}
 
 }
 

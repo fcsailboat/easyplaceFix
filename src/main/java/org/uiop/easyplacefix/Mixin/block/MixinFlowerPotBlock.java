@@ -1,0 +1,43 @@
+package org.uiop.easyplacefix.Mixin.block;
+
+import fi.dy.masa.litematica.materials.MaterialCache;
+import fi.dy.masa.litematica.util.EntityUtils;
+import fi.dy.masa.litematica.util.InventoryUtils;
+import fi.dy.masa.litematica.world.SchematicWorldHandler;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
+import net.minecraft.block.FlowerPotBlock;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.Hand;
+import net.minecraft.util.hit.BlockHitResult;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
+import org.uiop.easyplacefix.IBlock;
+@Mixin(FlowerPotBlock.class)
+public abstract class MixinFlowerPotBlock implements IBlock {
+    @Shadow public abstract Block getContent();
+
+    @Shadow protected abstract boolean isEmpty();
+
+//    @Override
+//    public void BlockAction(BlockState blockState, BlockHitResult blockHitResult) {
+//        if (!this.isEmpty()){//TODo 后续需要将放置提取出来，需要包含(方块转物品)
+//            ItemStack stack_pot = MaterialCache.getInstance().getRequiredBuildItemForState(Blocks.FLOWER_POT.getDefaultState());
+//            InventoryUtils.schematicWorldPickBlock(stack_pot, blockHitResult.getBlockPos(),  SchematicWorldHandler.getSchematicWorld(), MinecraftClient.getInstance());
+//            Hand hand = EntityUtils.getUsedHandForItem(MinecraftClient.getInstance().player, stack_pot);
+//            MinecraftClient.getInstance().interactionManager.interactBlock(MinecraftClient.getInstance().player, hand, blockHitResult);
+//
+//
+//            Block flower = this.getContent();
+//            ItemStack stack = MaterialCache.getInstance().getRequiredBuildItemForState(flower.getDefaultState());
+//            InventoryUtils.schematicWorldPickBlock(stack, blockHitResult.getBlockPos(),  SchematicWorldHandler.getSchematicWorld(), MinecraftClient.getInstance());
+//            Hand hand2 = EntityUtils.getUsedHandForItem(MinecraftClient.getInstance().player, stack);
+//            MinecraftClient.getInstance().interactionManager.interactBlock(MinecraftClient.getInstance().player, hand2, blockHitResult);
+//
+//        }
+//
+//
+//    }
+}

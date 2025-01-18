@@ -36,6 +36,7 @@
     "block.MixinDispenserBlock",
     "block.MixinDoorBlock",
     "block.MixinFenceGateBlock",
+    "block.MixinFlowerPotBlock",
     "block.MixinGlazedTerracottaBlock",
     "block.MixinGrindstoneBlock",
     "block.MixinHangingSignBlock",
