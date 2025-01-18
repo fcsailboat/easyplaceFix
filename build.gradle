@@ -1,5 +1,5 @@
 plugins {
-    id 'fabric-loom' version '1.7.3'
+    id 'fabric-loom' version '1.9.2'
     id 'maven-publish'
 }
 
@@ -38,8 +38,8 @@ dependencies {
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
     mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
-    modImplementation "maven.modrinth:bEpr0Arc:5kAmiBye"//litematica
-    modImplementation "maven.modrinth:GcWjdA9I:oExLoQk8"//malilib
+    modImplementation "maven.modrinth:bEpr0Arc:6BEqwWz8"//litematica
+    modImplementation "maven.modrinth:GcWjdA9I:bWdPm0zw"//malilib
     modRuntimeOnly(modApi(fabricApi.module("fabric-api-base", project.fabric_api_version)))
     modRuntimeOnly(modApi(fabricApi.module("fabric-networking-api-v1", project.fabric_api_version)))
     modRuntimeOnly(modApi(fabricApi.module("fabric-resource-loader-v0", project.fabric_api_version)))

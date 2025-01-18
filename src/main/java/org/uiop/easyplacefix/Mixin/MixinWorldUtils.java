@@ -138,7 +138,7 @@ public abstract class MixinWorldUtils {
         Block block = blockState.getBlock();
         Pair<LookAt, LookAt> lookAtPair = ((IBlock) block).getYawAndPitch(blockState);
         if (lookAtPair != null) {
-            PlayerRotationAction.setServerBoundPlayerRotation(lookAtPair.getLeft().Value(), lookAtPair.getRight().Value());
+            PlayerRotationAction.setServerBoundPlayerRotation(lookAtPair.getLeft().Value(), lookAtPair.getRight().Value(),player.horizontalCollision);
         }
 
 
@@ -213,7 +213,7 @@ public abstract class MixinWorldUtils {
                         predicate = block -> block instanceof FenceGateBlock;
                     else if (ReplacedBlock instanceof TrapdoorBlock)//活板门
                         predicate = block -> block instanceof TrapdoorBlock;
-                    else if (ReplacedBlock instanceof CoralParentBlock)//珊瑚扇
+                    else if (ReplacedBlock instanceof CoralFanBlock)//珊瑚扇
                         predicate = block -> block instanceof CoralFanBlock;
 
                     if (predicate != null) {
