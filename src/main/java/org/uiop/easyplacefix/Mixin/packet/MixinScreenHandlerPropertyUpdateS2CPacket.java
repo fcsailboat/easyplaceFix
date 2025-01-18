@@ -22,6 +22,7 @@ public class MixinScreenHandlerPropertyUpdateS2CPacket {//这是更新插槽状�
             syn = false;
             screenId = screenHandlerPropertyUpdateS2CPacket.getSyncId();
             aaa.run();
+            aaa=null;
             return false;
         }
         return !crafterOperation;
