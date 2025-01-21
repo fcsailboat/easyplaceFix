@@ -4,11 +4,13 @@
   "EasyPlaceFix.config.generic.comment.AllowInteraction": "EasyPlace will allow interaction while empty-handed",
   "EasyPlaceFix.config.generic.comment.loosenMode": "Makes easyPlace more compatible with different variant for\n live panel trapdoor/stone_wall/coral_fan/fence gates",
   "EasyPlaceFix.config.generic.comment.nbtIgnore": "easyPlace neglected inventory items NBT",
+  "EasyPlaceFix.config.generic.comment.observerDetect": "Easy Placement detects if the block the observer is looking at has been correctly placed",
   "easyPlaceFix.config.hotkeys.comment.AllowInteraction": "EasyPlace opening shortcuts that will allow interaction when empty-handed",
   "easyPlaceFix.config.hotkeys.comment.loosenmode": "EasyPlace the shortcut key Settings for loosen mode",
   "easyPlaceFix.config.hotkeys.comment.nbtIgnore": "easyPlace NBT shortcuts for neglected inventory items",
   "loosenMode": "LoosenMode",
   "loosenModeHotkey": "loosenMode shortcut key",
   "nbtIgnore": "easyPlaceIgnoreItemNBT",
-  "nbtIgnoreHotkey": "easyPlaceIgnoreItemNBT shortcut key"
+  "nbtIgnoreHotkey": "easyPlaceIgnoreItemNBT shortcut key",
+  "observerDetect": "easyPlacementOfObserverDetection"
 }
