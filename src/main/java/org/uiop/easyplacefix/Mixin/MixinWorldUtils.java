@@ -12,6 +12,8 @@ import fi.dy.masa.litematica.materials.MaterialCache;
 import fi.dy.masa.litematica.util.EntityUtils;
 import fi.dy.masa.litematica.util.RayTraceUtils;
 import fi.dy.masa.litematica.util.WorldUtils;
+import fi.dy.masa.litematica.world.SchematicWorldHandler;
+import fi.dy.masa.litematica.world.WorldSchematic;
 import net.minecraft.block.*;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
@@ -29,6 +31,8 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Pair;
 import net.minecraft.util.hit.BlockHitResult;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -40,8 +44,8 @@ import java.util.function.Predicate;
 import static fi.dy.masa.litematica.util.InventoryUtils.schematicWorldPickBlock;
 import static org.uiop.easyplacefix.EasyPlaceFix.findBlockInInventory;
 import static org.uiop.easyplacefix.EasyPlaceFix.modifyBoolean;
-import static org.uiop.easyplacefix.config.easyPlacefixConfig.Allow_Interaction;
-import static org.uiop.easyplacefix.config.easyPlacefixConfig.LOOSEN_MODE;
+import static org.uiop.easyplacefix.config.easyPlacefixConfig.*;
+import static org.uiop.easyplacefix.until.doEasyPlace.isSchematicBlock;
 
 @Mixin(WorldUtils.class)
 public abstract class MixinWorldUtils {
@@ -141,6 +145,20 @@ public abstract class MixinWorldUtils {
             PlayerRotationAction.setServerBoundPlayerRotation(lookAtPair.getLeft().Value(), lookAtPair.getRight().Value(),player.horizontalCollision);
         }
 
+        // 侦测器放置检测
+        if (OBSERVER_DETECT.getBooleanValue() && blockState.isOf(Blocks.OBSERVER) && client.world != null) {
+            Direction direction = blockState.get(Properties.FACING);
+
+            BlockPos offset = hitResult.getBlockPos().offset(direction);
+            WorldSchematic schematicWorld = SchematicWorldHandler.getSchematicWorld();
+            // 判断侦测器看向的是否在投影范围内
+            if (isSchematicBlock(offset) && schematicWorld != null) {
+                BlockState lookBlock = client.world.getBlockState(offset);
+                if (!schematicWorld.getBlockState(offset).getBlock().equals(lookBlock.getBlock())) {
+                    return ActionResult.FAIL;
+                }
+            }
+        }
 
 
         ((IClientPlayerInteractionManager) interactionManager).syn();//同步快捷栏的选择框

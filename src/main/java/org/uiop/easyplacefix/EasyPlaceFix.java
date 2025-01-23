@@ -9,6 +9,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Hand;
+import org.uiop.easyplacefix.config.Hotkeys;
 import org.uiop.easyplacefix.config.easyPlaceFixHotkeys;
 
 import java.util.ArrayList;
@@ -28,6 +29,7 @@ public class EasyPlaceFix implements ModInitializer {
     @Override
     public void onInitialize() {
         easyPlaceFixHotkeys.addCallbacks(MinecraftClient.getInstance());
+        Hotkeys.init();
     }
 
     public static Hand findBlockInInventory(PlayerInventory inv, Predicate<Block> predicate) {
