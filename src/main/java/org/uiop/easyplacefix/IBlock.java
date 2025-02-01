@@ -1,11 +1,14 @@
 package org.uiop.easyplacefix;
 
 import net.minecraft.block.BlockState;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.Pair;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
+
+import static org.uiop.easyplacefix.config.easyPlacefixConfig.Allow_Interaction;
 
 public interface IBlock {
     default boolean hasYawPitch() {
@@ -30,8 +33,6 @@ public interface IBlock {
 
     default void BlockAction(BlockState blockState, BlockHitResult blockHitResult) {
     }
-
-    default boolean IsChest() {
-        return false;
-    }
+    default ActionResult isSchemaTermination(BlockPos pos, BlockState blockState, BlockState worldBlockstate){return null;}
+    default ActionResult isWorldTermination(BlockPos pos, BlockState blockState,BlockState worldBlockstate){return null;}
 }

@@ -8,12 +8,12 @@ import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
+import fi.dy.masa.litematica.config.Configs;
 import fi.dy.masa.litematica.materials.MaterialCache;
 import fi.dy.masa.litematica.util.EntityUtils;
 import fi.dy.masa.litematica.util.RayTraceUtils;
 import fi.dy.masa.litematica.util.WorldUtils;
 import fi.dy.masa.litematica.world.SchematicWorldHandler;
-import fi.dy.masa.litematica.world.WorldSchematic;
 import net.minecraft.block.*;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
@@ -21,18 +21,12 @@ import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.network.ClientPlayerInteractionManager;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.network.packet.c2s.play.PlayerInteractBlockC2SPacket;
-import net.minecraft.network.packet.c2s.play.PlayerInteractItemC2SPacket;
-import net.minecraft.state.property.Properties;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Pair;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -41,23 +35,32 @@ import org.uiop.easyplacefix.until.PlayerRotationAction;
 
 import java.util.function.Predicate;
 
-import static fi.dy.masa.litematica.util.InventoryUtils.schematicWorldPickBlock;
+import static fi.dy.masa.litematica.util.WorldUtils.getValidBlockRange;
 import static org.uiop.easyplacefix.EasyPlaceFix.findBlockInInventory;
 import static org.uiop.easyplacefix.EasyPlaceFix.modifyBoolean;
 import static org.uiop.easyplacefix.config.easyPlacefixConfig.*;
-import static org.uiop.easyplacefix.until.doEasyPlace.isSchematicBlock;
 
 @Mixin(WorldUtils.class)
 public abstract class MixinWorldUtils {
     @WrapMethod(method = "doEasyPlaceAction")
     private static ActionResult fix(MinecraftClient mc, Operation<ActionResult> original) {//修复投影本身bug
-        if (mc.targetedEntity != null) {
-            if (Allow_Interaction.getBooleanValue()) {
-                if (mc.targetedEntity instanceof Inventory) return ActionResult.PASS;
-            }
-            return ActionResult.FAIL;
-        }
+        double traceMaxRange = getValidBlockRange(mc);
+        RayTraceUtils.RayTraceWrapper traceWrapper;
+        boolean targetFluids = Configs.InfoOverlays.INFO_OVERLAYS_TARGET_FLUIDS.getBooleanValue();
+        traceWrapper = RayTraceUtils.getGenericTrace(mc.world, mc.player, traceMaxRange, true, targetFluids, false);
+        if (traceWrapper==null)return ActionResult.PASS;
 
+
+        BlockPos pos = traceWrapper.getBlockHitResult().getBlockPos();
+        BlockState worldBlock = mc.world.getBlockState(pos);
+        BlockState blockstate =  SchematicWorldHandler.getSchematicWorld().getBlockState(pos);
+        ActionResult isTermination = ((IBlock)worldBlock.getBlock()).isWorldTermination(pos,blockstate,worldBlock);//是否终止
+        if (isTermination!=null)return isTermination;
+
+        isTermination = ((IBlock)blockstate.getBlock()).isSchemaTermination(pos,blockstate,worldBlock);//是否终止
+        if (isTermination!=null)return isTermination;
+
+//
 
 
         return original.call(mc);
@@ -97,23 +100,7 @@ public abstract class MixinWorldUtils {
 //                }这是含水方块放置的代码，还缺少炼药锅岩浆
 
 
-            if (Allow_Interaction.getBooleanValue()) {
-                BlockState blockState = MinecraftClient.getInstance().world.getBlockState(traceWrapper.getBlockHitResult().getBlockPos());
-                if (
-                        MinecraftClient.getInstance().player.getMainHandStack().isEmpty()
-                                && (MinecraftClient.getInstance().player.getOffHandStack().isEmpty()
-//                                MinecraftClient.getInstance().player.getOffHandStack().get(DataComponentTypes.CAN_PLACE_ON) == null
-                        )
-                ) {
-                    return ActionResult.PASS;
-                }
-                if (blockState == null) return original;
-                if (((IBlock) blockState.getBlock()).IsChest()) {
-                    return ActionResult.PASS;
-                }
 
-
-            }
         }
 
 
@@ -131,7 +118,8 @@ public abstract class MixinWorldUtils {
                                                     BlockHitResult hitResult,
                                                     Operation<ActionResult> original,
                                                     @Share("stateSchematic") LocalRef<BlockState> stateSchematicRef,
-                                                    @Local RayTraceUtils.RayTraceWrapper traceWrapper) throws InterruptedException {
+                                                    @Local RayTraceUtils.RayTraceWrapper traceWrapper
+    ) throws InterruptedException {
         BlockHitResult blockHitResultFirstOne = traceWrapper.getBlockHitResult();
         MinecraftClient client = MinecraftClient.getInstance();
         ClientPlayNetworkHandler net = client.getNetworkHandler();
@@ -145,29 +133,20 @@ public abstract class MixinWorldUtils {
             PlayerRotationAction.setServerBoundPlayerRotation(lookAtPair.getLeft().Value(), lookAtPair.getRight().Value(),player.horizontalCollision);
         }
 
-        // 侦测器放置检测
-        if (OBSERVER_DETECT.getBooleanValue() && blockState.isOf(Blocks.OBSERVER) && client.world != null) {
-            Direction direction = blockState.get(Properties.FACING);
 
-            BlockPos offset = hitResult.getBlockPos().offset(direction);
-            WorldSchematic schematicWorld = SchematicWorldHandler.getSchematicWorld();
-            // 判断侦测器看向的是否在投影范围内
-            if (isSchematicBlock(offset) && schematicWorld != null) {
-                BlockState lookBlock = client.world.getBlockState(offset);
-                if (!schematicWorld.getBlockState(offset).getBlock().equals(lookBlock.getBlock())) {
-                    return ActionResult.FAIL;
-                }
-            }
-        }
 
 
         ((IClientPlayerInteractionManager) interactionManager).syn();//同步快捷栏的选择框
+
         Pair<BlockHitResult, Integer> blockHitResultIntegerPair =
                 ((IBlock) block).getHitResult(
                         blockState,
-                        blockHitResultFirstOne.getBlockPos());
-        if (blockHitResultIntegerPair == null) return ActionResult.FAIL;//获取操作数据(blockHitResult)
-        BlockHitResult blockHitResult = blockHitResultIntegerPair.getLeft();
+                        blockHitResultFirstOne.getBlockPos()
+                );
+
+        if (blockHitResultIntegerPair == null) return ActionResult.FAIL;
+
+        BlockHitResult blockHitResult = blockHitResultIntegerPair.getLeft();//获取操作数据(blockHitResult)
         Vec3d vec3d = new Vec3d(
                 blockHitResult.getBlockPos().getX() + blockHitResult.getPos().x,
                 blockHitResult.getBlockPos().getY() + blockHitResult.getPos().y,
@@ -208,6 +187,7 @@ public abstract class MixinWorldUtils {
                                        @Share("stateSchematic") LocalRef<BlockState> stateSchematicRef
     ) {
         stateSchematicRef.set(stateSchematic);//设置一个共享的BlockState,用于在Mixin中共享对应的投影方块
+
         return original.call(instance, stateSchematic);
     }
 

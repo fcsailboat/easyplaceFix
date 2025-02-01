@@ -15,7 +15,6 @@ import static net.minecraft.util.math.Direction.Axis;
 
 @Mixin(PillarBlock.class)
 public class MixinPillarBlock implements IBlock {
-
     @Override
     public Pair<BlockHitResult, Integer> getHitResult(BlockState blockState, BlockPos blockPos) {
         Axis axis = blockState.get(Properties.AXIS);
