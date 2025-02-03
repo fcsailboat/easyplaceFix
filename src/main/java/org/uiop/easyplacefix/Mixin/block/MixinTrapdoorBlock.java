@@ -32,7 +32,7 @@ public class MixinTrapdoorBlock implements IBlock {
     }
 
     @Override
-    public Pair<BlockHitResult, Integer> getHitResult(BlockState blockState, BlockPos blockPos) {
+    public Pair<BlockHitResult, Integer> getHitResult(BlockState blockState, BlockPos blockPos, BlockState worldBlockState) {
 //        Direction direction = blockState.get(Properties.HORIZONTAL_FACING);
         return new Pair<>(switch (blockState.get(Properties.BLOCK_HALF)) {
             case TOP -> new BlockHitResult(new Vec3d(0.5, 1, 0.5), Direction.DOWN, blockPos, false);

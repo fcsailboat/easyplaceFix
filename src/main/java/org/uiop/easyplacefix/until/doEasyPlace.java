@@ -1,10 +1,38 @@
 package org.uiop.easyplacefix.until;
 
+import fi.dy.masa.litematica.config.Configs;
 import fi.dy.masa.litematica.data.DataManager;
 import fi.dy.masa.litematica.schematic.placement.SchematicPlacementManager;
+import fi.dy.masa.litematica.util.EntityUtils;
+import fi.dy.masa.litematica.util.InventoryUtils;
+import fi.dy.masa.litematica.util.RayTraceUtils;
+import fi.dy.masa.litematica.world.SchematicWorldHandler;
+import net.minecraft.block.*;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.ClientPlayerInteractionManager;
+import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.item.ItemPlacementContext;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.Hand;
+import net.minecraft.util.Pair;
+import net.minecraft.util.hit.BlockHitResult;
+import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.World;
+import org.uiop.easyplacefix.EasyPlaceFix;
+import org.uiop.easyplacefix.IBlock;
+import org.uiop.easyplacefix.IClientPlayerInteractionManager;
+import org.uiop.easyplacefix.LookAt;
 
 import java.util.List;
+import java.util.function.Predicate;
+
+import static fi.dy.masa.litematica.util.WorldUtils.getValidBlockRange;
+import static org.uiop.easyplacefix.EasyPlaceFix.findBlockInInventory;
+import static org.uiop.easyplacefix.EasyPlaceFix.modifyBoolean;
+import static org.uiop.easyplacefix.config.easyPlacefixConfig.LOOSEN_MODE;
 
 public class doEasyPlace {//TODO 轻松放置重写计划
 
@@ -21,5 +49,152 @@ public class doEasyPlace {//TODO 轻松放置重写计划
             }
         }
         return false;
+    }
+    public static Hand loosenMode(Hand hand,ItemStack stack,BlockState stateSchema)
+    {
+        if (hand == null && LOOSEN_MODE.getBooleanValue()) {
+            if (!stack.isEmpty()) {
+            if (!EntityUtils.isCreativeMode(MinecraftClient.getInstance().player)) {
+                Block ReplacedBlock = stateSchema.getBlock();//将被替换的item对应的方块
+                Predicate<Block> predicate = null;
+                if (ReplacedBlock instanceof WallBlock)   //墙类
+                    predicate = block -> block instanceof WallBlock;
+                else if (ReplacedBlock instanceof FenceGateBlock)//栅栏门
+                    predicate = block -> block instanceof FenceGateBlock;
+                else if (ReplacedBlock instanceof TrapdoorBlock)//活板门
+                    predicate = block -> block instanceof TrapdoorBlock;
+                else if (ReplacedBlock instanceof CoralFanBlock)//珊瑚扇
+                    predicate = block -> block instanceof CoralFanBlock;
+
+                if (predicate != null) {
+                    PlayerInventory playerInventory = MinecraftClient.getInstance().player.getInventory();
+
+                    return findBlockInInventory(playerInventory, predicate);
+
+                }
+            }}
+
+        }
+        return hand;
+    }
+
+    public static ActionResult doEasyPlace2(MinecraftClient mc){
+        RayTraceUtils.RayTraceWrapper traceWrapper;
+        double traceMaxRange = getValidBlockRange(mc);
+        HitResult traceVanilla = RayTraceUtils.getRayTraceFromEntity(mc.world, mc.player, false, traceMaxRange);
+        if (Configs.Generic.EASY_PLACE_FIRST.getBooleanValue())
+        {
+            // Temporary hack, using this same config here
+            boolean targetFluids = Configs.InfoOverlays.INFO_OVERLAYS_TARGET_FLUIDS.getBooleanValue();
+            traceWrapper = RayTraceUtils.getGenericTrace(mc.world, mc.player, traceMaxRange, true, targetFluids, false);
+        }
+        else
+        {
+//            Configs.Generic.EASY_PLACE_FIRST.setBooleanValue(true); 紧急方案[Doge]
+            traceWrapper = RayTraceUtils.getFurthestSchematicWorldTraceBeforeVanilla(mc.world, mc.player, traceMaxRange);
+        }
+        if (traceWrapper==null)return ActionResult.PASS;
+
+        World schematicWorld = SchematicWorldHandler.getSchematicWorld();
+        BlockHitResult trace = traceWrapper.getBlockHitResult();
+        BlockPos pos = trace.getBlockPos();
+        BlockState stateClient = mc.world.getBlockState(pos);//获取本地方块状态
+        BlockState stateSchematic = schematicWorld.getBlockState(pos);
+
+        ActionResult isTermination = ((IBlock)stateClient.getBlock()).isWorldTermination(pos,stateSchematic,stateClient);//是否终止
+        if (isTermination!=null)return isTermination;
+
+        isTermination = ((IBlock)stateSchematic.getBlock()).isSchemaTermination(pos,stateSchematic,stateClient);//是否终止
+        if (isTermination!=null)return isTermination;
+
+
+        //MISS会在指针没有目标时(列如：指向空中)，不包括投影方块
+        if (traceVanilla.getType()== HitResult.Type.ENTITY)
+        {
+            return ActionResult.PASS;
+        }
+        if (traceWrapper.getHitType() == RayTraceUtils.RayTraceWrapper.HitType.SCHEMATIC_BLOCK){
+
+            ItemStack stack = new ItemStack(((IBlock)stateSchematic.getBlock()).getItemForBlockState(stateSchematic));
+            if (!stack.isEmpty()){
+
+                if (stateSchematic == stateClient)//对比
+                {
+                    return ActionResult.FAIL;
+                }
+                //删除了缓存和放置过快检查
+                if (!stateClient.canReplace(
+                        new ItemPlacementContext(
+                                MinecraftClient.getInstance().player,
+                                Hand.MAIN_HAND,
+                                stack,
+                                trace
+                        ))
+                )return ActionResult.FAIL;
+
+
+
+
+
+                ClientPlayerInteractionManager interactionManager = MinecraftClient.getInstance().interactionManager;
+                InventoryUtils.schematicWorldPickBlock(stack, pos, schematicWorld, mc);
+                Hand hand = EntityUtils.getUsedHandForItem(mc.player, stack);
+                hand = loosenMode(hand,stack,stateSchematic);
+                if (hand == null)
+                {
+                    return ActionResult.FAIL;
+                }
+                Block block = stateSchematic.getBlock();
+                Pair<LookAt, LookAt> lookAtPair = ((IBlock) block).getYawAndPitch(stateSchematic);
+                if (lookAtPair != null) {
+                    PlayerRotationAction.setServerBoundPlayerRotation(lookAtPair.getLeft().Value(), lookAtPair.getRight().Value(),MinecraftClient.getInstance().player.horizontalCollision);
+                }
+
+
+
+
+                ((IClientPlayerInteractionManager) interactionManager).syn();//同步快捷栏的选择框
+
+                Pair<BlockHitResult, Integer> blockHitResultIntegerPair =
+                        ((IBlock) block).getHitResult(
+                                stateSchematic,
+                                trace.getBlockPos(),
+                                stateClient
+                                );
+
+                if (blockHitResultIntegerPair == null) return ActionResult.FAIL;
+
+                BlockHitResult blockHitResult = blockHitResultIntegerPair.getLeft();//获取操作数据(blockHitResult)
+                Vec3d vec3d = new Vec3d(
+                        blockHitResult.getBlockPos().getX() + blockHitResult.getPos().x,
+                        blockHitResult.getBlockPos().getY() + blockHitResult.getPos().y,
+                        blockHitResult.getBlockPos().getZ() + blockHitResult.getPos().z
+                );
+                BlockHitResult offsetBlockhitResult = new BlockHitResult(
+                        vec3d,
+                        blockHitResult.getSide(),
+                        blockHitResult.getBlockPos(),
+                        false
+                );
+                if (stateSchematic.getBlock() instanceof PistonBlock) {//TODO 了解interactBlock内部工作原理，改进这部分代码
+                    EasyPlaceFix.pistonBlockState = stateSchematic;
+                    modifyBoolean = true;
+                }
+
+                interactionManager.interactBlock(MinecraftClient.getInstance().player, hand, offsetBlockhitResult);
+                int i = 1;
+                while (i < blockHitResultIntegerPair.getRight()) {
+                    interactionManager.interactBlock(MinecraftClient.getInstance().player, hand, trace);
+                    i++;
+                }
+                ((IBlock) block).BlockAction(stateSchematic, trace);
+//        if (blockState.get(Pro))
+                return ActionResult.SUCCESS;
+
+
+
+            }
+        }
+        return ActionResult.PASS;
     }
 }

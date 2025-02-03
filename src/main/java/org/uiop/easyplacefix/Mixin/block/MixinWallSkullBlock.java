@@ -28,7 +28,7 @@ public class MixinWallSkullBlock implements IBlock {
     }
 
     @Override//TODO 测试可不可以凭空放在墙上的头颅
-    public Pair<BlockHitResult, Integer> getHitResult(BlockState blockState, BlockPos blockPos) {
+    public Pair<BlockHitResult, Integer> getHitResult(BlockState blockState, BlockPos blockPos, BlockState worldBlockState) {
         Direction direction = blockState.get(Properties.HORIZONTAL_FACING);
         return
                 canPlaceAt(MinecraftClient.getInstance().world, blockPos, direction) ?

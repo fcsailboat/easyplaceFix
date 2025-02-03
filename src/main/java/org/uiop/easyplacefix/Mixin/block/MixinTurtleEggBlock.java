@@ -14,7 +14,7 @@ import org.uiop.easyplacefix.IBlock;
 @Mixin(TurtleEggBlock.class)
 public class MixinTurtleEggBlock implements IBlock {
     @Override
-    public Pair<BlockHitResult, Integer> getHitResult(BlockState blockState, BlockPos blockPos) {
+    public Pair<BlockHitResult, Integer> getHitResult(BlockState blockState, BlockPos blockPos, BlockState worldBlockState) {
         return new Pair<>(new BlockHitResult(
                 new Vec3d(0.5, 0.5, 0.5),
                 Direction.UP,

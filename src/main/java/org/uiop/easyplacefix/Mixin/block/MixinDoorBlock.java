@@ -6,6 +6,7 @@ import net.minecraft.block.DoorBlock;
 import net.minecraft.block.enums.DoorHinge;
 import net.minecraft.block.enums.DoubleBlockHalf;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.state.property.EnumProperty;
 import net.minecraft.state.property.Properties;
 import net.minecraft.util.Pair;
 import net.minecraft.util.hit.BlockHitResult;
@@ -28,6 +29,10 @@ public abstract class MixinDoorBlock implements IBlock {
     @Final
     private BlockSetType blockSetType;
 
+    @Shadow
+    @Final
+    public static final EnumProperty<DoubleBlockHalf> HALF = Properties.DOUBLE_BLOCK_HALF;
+
     @Override
     public Pair<LookAt, LookAt> getYawAndPitch(BlockState blockState) {
         return switch (blockState.get(Properties.HORIZONTAL_FACING)) {
@@ -39,10 +44,13 @@ public abstract class MixinDoorBlock implements IBlock {
     }
 
     @Override
-    public Pair<BlockHitResult, Integer> getHitResult(BlockState blockState, BlockPos blockPos) {
+    public Pair<BlockHitResult, Integer> getHitResult(BlockState blockState, BlockPos blockPos, BlockState worldBlockState) {
         Direction direction = blockState.get(Properties.HORIZONTAL_FACING);
         DoorHinge doorHinge = blockState.get(Properties.DOOR_HINGE);
-        if (blockState.get(Properties.DOUBLE_BLOCK_HALF) == DoubleBlockHalf.UPPER) blockPos = blockPos.down();
+        if (blockState.get(Properties.DOUBLE_BLOCK_HALF) == DoubleBlockHalf.UPPER) {
+            blockPos = blockPos.down();
+           blockState = blockState.with(Properties.DOUBLE_BLOCK_HALF,DoubleBlockHalf.LOWER);
+        }
         return this.canPlaceAt(blockState, MinecraftClient.getInstance().world, blockPos) ?
                 new Pair<>(switch (direction) {
                     case SOUTH -> {

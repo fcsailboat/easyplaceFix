@@ -20,7 +20,7 @@ public abstract class MixinCandleBlock implements IBlock {
     protected abstract boolean canPlaceAt(BlockState state, WorldView world, BlockPos pos);
 
     @Override
-    public Pair<BlockHitResult, Integer> getHitResult(BlockState blockState, BlockPos blockPos) {
+    public Pair<BlockHitResult, Integer> getHitResult(BlockState blockState, BlockPos blockPos, BlockState worldBlockState) {
         return canPlaceAt(blockState, MinecraftClient.getInstance().world, blockPos) ? new Pair<>(
                 new BlockHitResult(
                         new Vec3d(0.5, 1, 0.5),

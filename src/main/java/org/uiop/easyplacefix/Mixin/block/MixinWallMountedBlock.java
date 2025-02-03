@@ -32,7 +32,7 @@ public abstract class MixinWallMountedBlock implements IBlock {
     }
 
     @Override
-    public Pair<BlockHitResult, Integer> getHitResult(BlockState blockState, BlockPos blockPos) {
+    public Pair<BlockHitResult, Integer> getHitResult(BlockState blockState, BlockPos blockPos, BlockState worldBlockState) {
         BlockFace blockFace = blockState.get(Properties.BLOCK_FACE);
         Direction direction = blockState.get(Properties.HORIZONTAL_FACING);
         return canPlaceAt(blockState, MinecraftClient.getInstance().world, blockPos) ?

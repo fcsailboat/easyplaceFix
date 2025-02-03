@@ -22,7 +22,7 @@ public class MixinSkullBlock implements IBlock {
     }
 
     @Override
-    public Pair<BlockHitResult, Integer> getHitResult(BlockState blockState, BlockPos blockPos) {
+    public Pair<BlockHitResult, Integer> getHitResult(BlockState blockState, BlockPos blockPos, BlockState worldBlockState) {
         return new Pair<>(
                 new BlockHitResult(
                         new Vec3d(0.5, 1, 0.5),

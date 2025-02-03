@@ -28,7 +28,7 @@ public class MixinBedBlock implements IBlock {
     }
 
     @Override
-    public Pair<BlockHitResult, Integer> getHitResult(BlockState blockState, BlockPos blockPos) {
+    public Pair<BlockHitResult, Integer> getHitResult(BlockState blockState, BlockPos blockPos, BlockState worldBlockState) {
         Direction direction = blockState.get(Properties.HORIZONTAL_FACING);
         if (blockState.get(Properties.BED_PART) == BedPart.HEAD) blockPos = blockPos.offset(direction.getOpposite());
         return new Pair<>(new BlockHitResult(

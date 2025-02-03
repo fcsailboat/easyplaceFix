@@ -35,7 +35,7 @@ public abstract class MixinBellBlock implements IBlock {
     }
 
     @Override
-    public Pair<BlockHitResult, Integer> getHitResult(BlockState blockState, BlockPos blockPos) {
+    public Pair<BlockHitResult, Integer> getHitResult(BlockState blockState, BlockPos blockPos, BlockState worldBlockState) {
         Direction facing = blockState.get(Properties.HORIZONTAL_FACING);
         return this.canPlaceAt(blockState, MinecraftClient.getInstance().world, blockPos) ?
                 new Pair<>(switch (blockState.get(Properties.ATTACHMENT)) {

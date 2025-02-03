@@ -25,7 +25,7 @@ public class MixinChestBlock implements IBlock {
     public static EnumProperty<ChestType> CHEST_TYPE;
 
     @Override
-    public Pair<BlockHitResult, Integer> getHitResult(BlockState blockState, BlockPos blockPos) {
+    public Pair<BlockHitResult, Integer> getHitResult(BlockState blockState, BlockPos blockPos, BlockState worldBlockState) {
 
         ChestType chestType = blockState.get(Properties.CHEST_TYPE);
         if (chestType == ChestType.SINGLE) {

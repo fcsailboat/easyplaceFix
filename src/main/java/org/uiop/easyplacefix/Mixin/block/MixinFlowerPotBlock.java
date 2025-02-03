@@ -9,6 +9,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.FlowerPotBlock;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
@@ -22,17 +23,16 @@ public abstract class MixinFlowerPotBlock implements IBlock {
     @Shadow protected abstract boolean isEmpty();
 
     @Override
+    public Item getItemForBlockState(BlockState blockState) {
+        return Blocks.FLOWER_POT.asItem();
+    }
+
+    @Override
     public void BlockAction(BlockState blockState, BlockHitResult blockHitResult) {
         if (!this.isEmpty()){//TODo 后续需要将放置提取出来，需要包含(方块转物品)
-            ItemStack stack_pot = MaterialCache.getInstance().getRequiredBuildItemForState(Blocks.FLOWER_POT.getDefaultState());
-            InventoryUtils.schematicWorldPickBlock(stack_pot, blockHitResult.getBlockPos(),  SchematicWorldHandler.getSchematicWorld(), MinecraftClient.getInstance());
-            Hand hand = EntityUtils.getUsedHandForItem(MinecraftClient.getInstance().player, stack_pot);
-            if (hand==null)return;
-            MinecraftClient.getInstance().interactionManager.interactBlock(MinecraftClient.getInstance().player, hand, blockHitResult);
-
 
             Block flower = this.getContent();
-            ItemStack stack = MaterialCache.getInstance().getRequiredBuildItemForState(flower.getDefaultState());
+            ItemStack stack = new ItemStack(flower.asItem());
             InventoryUtils.schematicWorldPickBlock(stack, blockHitResult.getBlockPos(),  SchematicWorldHandler.getSchematicWorld(), MinecraftClient.getInstance());
             Hand hand2 = EntityUtils.getUsedHandForItem(MinecraftClient.getInstance().player, stack);
             if (hand2==null)return;

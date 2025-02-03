@@ -25,7 +25,7 @@ public class MixinFenceGateBlock implements IBlock {
     }
 
     @Override
-    public Pair<BlockHitResult, Integer> getHitResult(BlockState blockState, BlockPos blockPos) {
+    public Pair<BlockHitResult, Integer> getHitResult(BlockState blockState, BlockPos blockPos, BlockState worldBlockState) {
         Direction direction = blockState.get(Properties.HORIZONTAL_FACING);
         return new Pair<>(new BlockHitResult(
                 new Vec3d(0.5, 0.5, 0.5),

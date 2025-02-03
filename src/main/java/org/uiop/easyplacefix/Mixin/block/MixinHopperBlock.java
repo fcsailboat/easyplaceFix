@@ -14,7 +14,7 @@ import org.uiop.easyplacefix.IBlock;
 @Mixin(HopperBlock.class)
 public class MixinHopperBlock implements IBlock {
     @Override
-    public Pair<BlockHitResult, Integer> getHitResult(BlockState blockState, BlockPos blockPos) {
+    public Pair<BlockHitResult, Integer> getHitResult(BlockState blockState, BlockPos blockPos, BlockState worldBlockState) {
         return new Pair<>(new BlockHitResult(
                 new Vec3d(0.5, 0.5, 0.5),
                 switch (blockState.get(Properties.HOPPER_FACING)) {

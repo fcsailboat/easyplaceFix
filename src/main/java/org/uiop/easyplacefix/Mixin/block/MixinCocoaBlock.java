@@ -20,7 +20,7 @@ public abstract class MixinCocoaBlock implements IBlock {
     protected abstract boolean canPlaceAt(BlockState state, WorldView world, BlockPos pos);
 
     @Override
-    public Pair<BlockHitResult, Integer> getHitResult(BlockState blockState, BlockPos blockPos) {
+    public Pair<BlockHitResult, Integer> getHitResult(BlockState blockState, BlockPos blockPos, BlockState worldBlockState) {
         Direction direction = blockState.get(Properties.HORIZONTAL_FACING);
         return this.canPlaceAt(blockState, MinecraftClient.getInstance().world, blockPos) ?
                 new Pair<>(

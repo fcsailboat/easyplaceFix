@@ -14,7 +14,7 @@ import org.uiop.easyplacefix.IBlock;
 @Mixin(RodBlock.class)
 public class MixinRodBlock implements IBlock {
     @Override
-    public Pair<BlockHitResult, Integer> getHitResult(BlockState blockState, BlockPos blockPos) {
+    public Pair<BlockHitResult, Integer> getHitResult(BlockState blockState, BlockPos blockPos, BlockState worldBlockState) {
         Direction direction = blockState.get(Properties.FACING);
         return new Pair<>(
                 new BlockHitResult(

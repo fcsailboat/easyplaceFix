@@ -26,7 +26,7 @@ public class MixinStairsBlock implements IBlock {
     }
 
     @Override
-    public Pair<BlockHitResult, Integer> getHitResult(BlockState blockState, BlockPos blockPos) {
+    public Pair<BlockHitResult, Integer> getHitResult(BlockState blockState, BlockPos blockPos, BlockState worldBlockState) {
 
         BlockHalf blockHalf = blockState.get(Properties.BLOCK_HALF);
         return switch (blockHalf) {

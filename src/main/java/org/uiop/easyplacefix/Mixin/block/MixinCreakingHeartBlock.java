@@ -13,7 +13,7 @@ import org.uiop.easyplacefix.IBlock;
 @Mixin(CreakingHeartBlock.class)
 public class MixinCreakingHeartBlock implements IBlock {
     @Override
-    public Pair<BlockHitResult, Integer> getHitResult(BlockState blockState, BlockPos blockPos) {
+    public Pair<BlockHitResult, Integer> getHitResult(BlockState blockState, BlockPos blockPos, BlockState worldBlockState) {
         Direction.Axis axis = blockState.get(Properties.AXIS);
 
         return new Pair<>(new BlockHitResult(

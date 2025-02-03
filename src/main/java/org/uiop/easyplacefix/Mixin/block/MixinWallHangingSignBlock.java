@@ -27,7 +27,7 @@ public abstract class MixinWallHangingSignBlock implements IBlock {
 //    }
 
     @Override
-    public Pair<BlockHitResult, Integer> getHitResult(BlockState blockState, BlockPos blockPos) {
+    public Pair<BlockHitResult, Integer> getHitResult(BlockState blockState, BlockPos blockPos, BlockState worldBlockState) {
         return canAttachAt(blockState, MinecraftClient.getInstance().world, blockPos) ?
                 new Pair<>(
                         new BlockHitResult(new Vec3d(0.5, 0.5, 0.5),
