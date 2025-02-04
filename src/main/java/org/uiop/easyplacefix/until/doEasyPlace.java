@@ -11,6 +11,7 @@ import net.minecraft.block.*;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerInteractionManager;
 import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ActionResult;
@@ -25,7 +26,9 @@ import org.uiop.easyplacefix.EasyPlaceFix;
 import org.uiop.easyplacefix.IBlock;
 import org.uiop.easyplacefix.IClientPlayerInteractionManager;
 import org.uiop.easyplacefix.LookAt;
+import org.uiop.easyplacefix.data.LoosenModeData;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -33,6 +36,7 @@ import static fi.dy.masa.litematica.util.WorldUtils.getValidBlockRange;
 import static org.uiop.easyplacefix.EasyPlaceFix.findBlockInInventory;
 import static org.uiop.easyplacefix.EasyPlaceFix.modifyBoolean;
 import static org.uiop.easyplacefix.config.easyPlacefixConfig.LOOSEN_MODE;
+import static org.uiop.easyplacefix.data.LoosenModeData.items;
 
 public class doEasyPlace {//TODO 轻松放置重写计划
 
@@ -50,6 +54,29 @@ public class doEasyPlace {//TODO 轻松放置重写计划
         }
         return false;
     }
+    public static Hand loosenMode2(HashSet<ItemStack> itemStackHashSet){
+
+            for (int i=0;i<MinecraftClient.getInstance().player.getInventory().size();i++){
+                ItemStack stack = MinecraftClient.getInstance().player.getInventory().getStack(i);
+                stack =stack.copy();
+//                HashSet<Item> items =new HashSet<>();
+//                for (ItemStack itemStack :itemStackHashSet){
+//                    items.add(itemStack.getItem());
+//                }
+                if (!stack.isEmpty()) {
+                   if (items.contains(stack.getItem())){
+                       InventoryUtils.setPickedItemToHand(i, stack.copy(), MinecraftClient.getInstance());
+                       return Hand.MAIN_HAND; // 找到满足条件的物品堆，返回其槽位
+                   }
+
+
+                }
+            }
+
+        return null;
+
+
+    }
     public static Hand loosenMode(Hand hand,ItemStack stack,BlockState stateSchema)
     {
         if (hand == null && LOOSEN_MODE.getBooleanValue()) {
@@ -65,13 +92,18 @@ public class doEasyPlace {//TODO 轻松放置重写计划
                     predicate = block -> block instanceof TrapdoorBlock;
                 else if (ReplacedBlock instanceof CoralFanBlock)//珊瑚扇
                     predicate = block -> block instanceof CoralFanBlock;
-
+                Hand hand1 = null;
                 if (predicate != null) {
                     PlayerInventory playerInventory = MinecraftClient.getInstance().player.getInventory();
-
-                    return findBlockInInventory(playerInventory, predicate);
+                     hand1 = findBlockInInventory(playerInventory, predicate);
+                }
+                if (hand1==null){
+                    HashSet<ItemStack> itemStackHashSet = LoosenModeData.loadFromFile();
+                    return loosenMode2(itemStackHashSet);
 
                 }
+                return hand1;
+
             }}
 
         }
