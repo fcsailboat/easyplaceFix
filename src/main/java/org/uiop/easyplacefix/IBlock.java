@@ -13,7 +13,7 @@ public interface IBlock {
     default boolean hasYawPitch() {
         return false;
     }
-
+    default long sleepTime(BlockState blockState){return 0;}
     default Pair<LookAt, LookAt> getYawAndPitch(BlockState blockState) {
         return null;
     }

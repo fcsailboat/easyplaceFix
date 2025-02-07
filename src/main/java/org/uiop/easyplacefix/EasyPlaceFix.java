@@ -5,14 +5,9 @@ import net.fabricmc.api.ModInitializer;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
-import net.minecraft.text.Text;
 import net.minecraft.util.Hand;
-import net.minecraft.util.math.Direction;
-import org.uiop.easyplacefix.config.Hotkeys;
-import org.uiop.easyplacefix.config.easyPlaceFixHotkeys;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import org.uiop.easyplacefix.screen.CustomInventoryScreen;
@@ -20,10 +15,13 @@ import org.uiop.easyplacefix.screen.CustomInventoryScreen;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Predicate;
 
 public class EasyPlaceFix implements ModInitializer {
-
+    public static boolean notChangPlayerLook =false;
+    public static float yawLock, pitchLock =0;
     public static BlockState pistonBlockState = null;
     public static boolean modifyBoolean = false;
     public static List<Boolean> crafterSlot = new ArrayList<>(Arrays.asList(false, false, false, false, false, false, false, false, false));
@@ -32,6 +30,7 @@ public class EasyPlaceFix implements ModInitializer {
     public static boolean syn = true;
     public static Runnable aaa;
     public static boolean loosenMode = false;
+    public static ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
     @Override
     public void onInitialize() {

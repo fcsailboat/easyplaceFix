@@ -71,6 +71,9 @@
     "packet.MixinInventoryS2CPacket",
     "packet.MixinOpenScreenS2CPacket",
     "packet.MixinPlayerInteractBlockC2SPacket",
+    "packet.MixinPlayerMoveC2SPacket",
+    "packet.MixinPlayerMoveC2SPacket$full",
+    "packet.MixinPlayerMoveC2SPacket$LookAndOnGround",
     "packet.MixinScreenHandlerPropertyUpdateS2CPacket"
   ],
   "client": [

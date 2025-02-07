@@ -11,9 +11,10 @@ import net.minecraft.block.*;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerInteractionManager;
 import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
+import net.minecraft.network.packet.c2s.play.HandSwingC2SPacket;
+import net.minecraft.network.packet.c2s.play.PlayerInteractBlockC2SPacket;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Pair;
@@ -30,11 +31,11 @@ import org.uiop.easyplacefix.data.LoosenModeData;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 
 import static fi.dy.masa.litematica.util.WorldUtils.getValidBlockRange;
-import static org.uiop.easyplacefix.EasyPlaceFix.findBlockInInventory;
-import static org.uiop.easyplacefix.EasyPlaceFix.modifyBoolean;
+import static org.uiop.easyplacefix.EasyPlaceFix.*;
 import static org.uiop.easyplacefix.config.easyPlacefixConfig.LOOSEN_MODE;
 import static org.uiop.easyplacefix.data.LoosenModeData.items;
 
@@ -179,10 +180,13 @@ public class doEasyPlace {//TODO 轻松放置重写计划
                 Block block = stateSchematic.getBlock();
                 Pair<LookAt, LookAt> lookAtPair = ((IBlock) block).getYawAndPitch(stateSchematic);
                 if (lookAtPair != null) {
-                    PlayerRotationAction.setServerBoundPlayerRotation(lookAtPair.getLeft().Value(), lookAtPair.getRight().Value(),MinecraftClient.getInstance().player.horizontalCollision);
+                    yawLock=lookAtPair.getLeft().Value();
+                    pitchLock=lookAtPair.getRight().Value();
+                    notChangPlayerLook=true;
+                    PlayerRotationAction.setServerBoundPlayerRotation(yawLock, pitchLock,mc.player.horizontalCollision);
                 }
-
-
+               long startTime =System.nanoTime();
+                long sleepTime = ((IBlock)block).sleepTime(stateSchematic);
 
 
                 ((IClientPlayerInteractionManager) interactionManager).syn();//同步快捷栏的选择框
@@ -212,15 +216,26 @@ public class doEasyPlace {//TODO 轻松放置重写计划
                     EasyPlaceFix.pistonBlockState = stateSchematic;
                     modifyBoolean = true;
                 }
+                Hand finalHand = hand;
+                ((IClientPlayerInteractionManager) interactionManager).syn2(mc.player,hand,offsetBlockhitResult);
+                scheduler.schedule(()->{
+                    mc.execute(()->{
+                        mc.getNetworkHandler().sendPacket(
+                                new PlayerInteractBlockC2SPacket(finalHand,offsetBlockhitResult,0));
+                        mc.getNetworkHandler().sendPacket(new HandSwingC2SPacket(finalHand));
+                        int i = 1;
+                        while (i < blockHitResultIntegerPair.getRight()) {
+                            interactionManager.interactBlock(MinecraftClient.getInstance().player, finalHand, trace);
+                            i++;
+                        }
+                        ((IBlock) block).BlockAction(stateSchematic, trace);
+                        notChangPlayerLook=false;
 
-                interactionManager.interactBlock(MinecraftClient.getInstance().player, hand, offsetBlockhitResult);
-                int i = 1;
-                while (i < blockHitResultIntegerPair.getRight()) {
-                    interactionManager.interactBlock(MinecraftClient.getInstance().player, hand, trace);
-                    i++;
-                }
-                ((IBlock) block).BlockAction(stateSchematic, trace);
-//        if (blockState.get(Pro))
+
+                    });
+
+                }, sleepTime-(System.nanoTime()-startTime), TimeUnit.NANOSECONDS);
+
                 return ActionResult.SUCCESS;
 
 

@@ -4,12 +4,22 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.PistonBlock;
 import net.minecraft.state.property.Properties;
 import net.minecraft.util.Pair;
+import net.minecraft.util.math.Direction;
 import org.spongepowered.asm.mixin.Mixin;
 import org.uiop.easyplacefix.IBlock;
 import org.uiop.easyplacefix.LookAt;
 
 @Mixin(PistonBlock.class)
 public class MixinPiston implements IBlock {
+    @Override
+    public long sleepTime(BlockState blockState) {
+        Direction facing = blockState.get(Properties.FACING);
+        if (facing== Direction.UP||facing==Direction.DOWN){
+            return 0;
+        }else {
+            return 40_000_000;
+        }
+    }
     @Override
     public Pair<LookAt, LookAt> getYawAndPitch(BlockState blockState) {
         return switch (blockState.get(Properties.FACING)) {
