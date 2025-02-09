@@ -17,7 +17,7 @@ public class MixinPiston implements IBlock {
         if (facing== Direction.UP||facing==Direction.DOWN){
             return 0;
         }else {
-            return 40_000_000;
+            return 50_000_000;
         }
     }
     @Override

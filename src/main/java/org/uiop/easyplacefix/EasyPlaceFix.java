@@ -10,13 +10,18 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.Hand;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
+import net.minecraft.util.math.BlockPos;
 import org.uiop.easyplacefix.screen.CustomInventoryScreen;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Predicate;
 
 public class EasyPlaceFix implements ModInitializer {
@@ -31,7 +36,9 @@ public class EasyPlaceFix implements ModInitializer {
     public static Runnable aaa;
     public static boolean loosenMode = false;
     public static ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-
+//    public static AtomicBoolean isRun = new AtomicBoolean();
+    // 初始化线程安全的Set
+    public static Set<BlockPos> concurrentSet = ConcurrentHashMap.newKeySet();
     @Override
     public void onInitialize() {
         ClientCommandRegistrationCallback.

@@ -27,6 +27,7 @@ import static org.uiop.easyplacefix.EasyPlaceFix.*;
 
 @Mixin(value = CrafterBlock.class)
 public class MixinCrafterBlock implements IBlock {
+
     @Override
     public Pair<LookAt, LookAt> getYawAndPitch(BlockState blockState) {
         Orientation orientation = blockState.get(Properties.ORIENTATION);
