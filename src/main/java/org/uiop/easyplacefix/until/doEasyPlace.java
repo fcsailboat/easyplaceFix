@@ -20,6 +20,7 @@ import net.minecraft.util.Pair;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.uiop.easyplacefix.EasyPlaceFix;
@@ -37,6 +38,7 @@ import static fi.dy.masa.litematica.util.WorldUtils.getValidBlockRange;
 import static org.uiop.easyplacefix.EasyPlaceFix.*;
 import static org.uiop.easyplacefix.config.easyPlacefixConfig.LOOSEN_MODE;
 import static org.uiop.easyplacefix.data.LoosenModeData.items;
+import static org.uiop.easyplacefix.until.PlayerRotationAction.*;
 
 public class doEasyPlace {//TODO 轻松放置重写计划
 
@@ -213,8 +215,8 @@ public class doEasyPlace {//TODO 轻松放置重写计划
 
                             Pair<LookAt, LookAt> lookAtPair = ((IBlock) block).getYawAndPitch(stateSchematic);
                             if (lookAtPair != null) {
-                                yawLock = lookAtPair.getLeft().Value();
-                                pitchLock = lookAtPair.getRight().Value();
+                                yawLock = limitYawRotation(Direction.fromHorizontalDegrees(lookAtPair.getLeft().Value()));
+                                pitchLock =lookAtPair.getRight().Value();
                                 notChangPlayerLook = true;
 //                        mc.execute(()->);
                                 PlayerRotationAction.setServerBoundPlayerRotation(yawLock, pitchLock, mc.player.horizontalCollision);
@@ -240,7 +242,6 @@ public class doEasyPlace {//TODO 轻松放置重写计划
                             }
                             ((IBlock) block).BlockAction(stateSchematic, trace);
                             notChangPlayerLook = false;
-
                             // 直接使用 sleepTime 作为延迟
 
                         }finally {
