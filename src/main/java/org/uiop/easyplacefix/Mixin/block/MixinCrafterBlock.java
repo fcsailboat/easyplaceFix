@@ -29,7 +29,8 @@ import static org.uiop.easyplacefix.EasyPlaceFix.*;
 public class MixinCrafterBlock implements IBlock {
     @Override
     public long sleepTime(BlockState blockState) {
-        Direction facing = blockState.get(Properties.FACING);
+        Orientation orientation = blockState.get(Properties.ORIENTATION);
+        Direction facing = orientation.getFacing();//决定其是垂直还是水平(水平情况附带朝向)
         if (facing== Direction.UP||facing==Direction.DOWN){
             return 0;
         }else {

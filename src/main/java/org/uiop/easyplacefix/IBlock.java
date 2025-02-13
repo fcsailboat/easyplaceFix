@@ -9,6 +9,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 
+import static org.uiop.easyplacefix.until.PlayerRotationAction.limitYawRotation;
+
 public interface IBlock {
     default boolean hasYawPitch() {
         return false;
@@ -16,6 +18,13 @@ public interface IBlock {
     default long sleepTime(BlockState blockState){return 0;}
     default Pair<LookAt, LookAt> getYawAndPitch(BlockState blockState) {
         return null;
+    }
+    default Pair<Float, Float> getLimitYawAndPitch(BlockState blockState) {
+        Pair<LookAt, LookAt> lookAtPair = getYawAndPitch(blockState);
+        if (lookAtPair!=null){
+            return new Pair<>(limitYawRotation(Direction.fromHorizontalDegrees(lookAtPair.getLeft().Value())),lookAtPair.getRight().Value());
+        }
+       return null;
     }
 
     default Direction getSide(BlockState blockState) {

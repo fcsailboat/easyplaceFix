@@ -15,6 +15,14 @@ import org.uiop.easyplacefix.LookAt;
 @Mixin(SkullBlock.class)
 public class MixinSkullBlock implements IBlock {
     @Override
+    public Pair<Float, Float> getLimitYawAndPitch(BlockState blockState) {
+        Pair<LookAt, LookAt> lookAtPair = getYawAndPitch(blockState);
+        return new Pair<>(
+                lookAtPair.getLeft().Value(),
+                lookAtPair.getRight().Value()
+        );
+    }
+    @Override
     public Pair<LookAt, LookAt> getYawAndPitch(BlockState blockState) {
         return new Pair<>(LookAt.Fractionize.customize(
                 blockState.get(Properties.ROTATION) * 23

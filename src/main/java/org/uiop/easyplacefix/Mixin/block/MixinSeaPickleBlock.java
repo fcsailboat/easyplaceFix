@@ -21,12 +21,21 @@ public abstract class MixinSeaPickleBlock extends PlantBlock implements IBlock {
 
     @Override
     public Pair<BlockHitResult, Integer> getHitResult(BlockState blockState, BlockPos blockPos, BlockState worldBlockState) {
+        int count;
+        if (worldBlockState.getBlock()==blockState.getBlock()){
+            count = blockState.get(Properties.PICKLES)-worldBlockState.get(Properties.PICKLES);
+            if (count<1)return null;
+        }else {
+            count = blockState.get(Properties.PICKLES);
+        }
+
+
         return canPlaceAt(blockState, MinecraftClient.getInstance().world, blockPos) ? new Pair<>(
                 new BlockHitResult(
                         new Vec3d(0.5, 0.5, 0.5),
                         Direction.UP,
                         blockPos, false
-                ), blockState.get(Properties.PICKLES)
+                ), count
         ) : null;
     }
 }

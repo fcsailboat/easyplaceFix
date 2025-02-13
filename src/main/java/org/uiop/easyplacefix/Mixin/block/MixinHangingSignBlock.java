@@ -21,7 +21,14 @@ public abstract class MixinHangingSignBlock implements IBlock {
 
     @Shadow
     protected abstract boolean canPlaceAt(BlockState state, WorldView world, BlockPos pos);
-
+    @Override
+    public Pair<Float, Float> getLimitYawAndPitch(BlockState blockState) {
+        Pair<LookAt, LookAt> lookAtPair = getYawAndPitch(blockState);
+        return new Pair<>(
+                lookAtPair.getLeft().Value(),
+                lookAtPair.getRight().Value()
+        );
+    }
     @Override
     public Pair<LookAt, LookAt> getYawAndPitch(BlockState blockState) {
         return new Pair<>(LookAt.Fractionize.customize(
