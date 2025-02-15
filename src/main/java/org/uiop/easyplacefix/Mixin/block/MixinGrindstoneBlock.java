@@ -19,6 +19,14 @@ import static net.minecraft.block.WallMountedBlock.canPlaceAt;
 @Mixin(GrindstoneBlock.class)
 public class MixinGrindstoneBlock implements IBlock {
     @Override
+    public long sleepTime(BlockState blockState) {
+        if (blockState.get(Properties.BLOCK_FACE) == BlockFace.WALL) return 50_000_000;
+
+        return 0;
+
+    }
+
+    @Override
     public Pair<LookAt, LookAt> getYawAndPitch(BlockState blockState) {
         if (blockState.get(Properties.BLOCK_FACE) != BlockFace.WALL)
             return switch (blockState.get(Properties.HORIZONTAL_FACING)) {
