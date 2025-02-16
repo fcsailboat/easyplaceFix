@@ -11,6 +11,7 @@ import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.packet.c2s.play.ClickSlotC2SPacket;
 import net.minecraft.network.packet.c2s.play.CloseHandledScreenC2SPacket;
+import net.minecraft.network.packet.c2s.play.PlayerInteractBlockC2SPacket;
 import net.minecraft.network.packet.c2s.play.SlotChangedStateC2SPacket;
 import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.state.property.Properties;
@@ -22,8 +23,10 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.uiop.easyplacefix.EasyPlaceFix;
 import org.uiop.easyplacefix.IBlock;
 import org.uiop.easyplacefix.LookAt;
+import org.uiop.easyplacefix.until.PlayerBlockAction;
 
-import static org.uiop.easyplacefix.EasyPlaceFix.*;
+import static org.uiop.easyplacefix.EasyPlaceFix.crafterOperation;
+import static org.uiop.easyplacefix.EasyPlaceFix.crafterSlot;
 
 @Mixin(value = CrafterBlock.class)
 public class MixinCrafterBlock implements IBlock {
@@ -31,9 +34,9 @@ public class MixinCrafterBlock implements IBlock {
     public long sleepTime(BlockState blockState) {
         Orientation orientation = blockState.get(Properties.ORIENTATION);
         Direction facing = orientation.getFacing();//决定其是垂直还是水平(水平情况附带朝向)
-        if (facing== Direction.UP||facing==Direction.DOWN){
+        if (facing == Direction.UP || facing == Direction.DOWN) {
             return 0;
-        }else {
+        } else {
             return 50_000_000;
         }
     }
@@ -75,23 +78,20 @@ public class MixinCrafterBlock implements IBlock {
                 crafterOperation = true;
             }
         }
-        if (crafterOperation)
-            MinecraftClient.getInstance().interactionManager.interactBlock(MinecraftClient.getInstance().player, Hand.MAIN_HAND, blockHitResult);
-        aaa = () -> {
-            int screenId = EasyPlaceFix.screenId;
-            for (int slot = 0; slot < crafterSlot.size(); slot++) {
-                boolean isDisable = crafterSlot.get(slot);
-                if (isDisable) {
-                    clientPlayNetworkHandler.sendPacket(new SlotChangedStateC2SPacket(slot, screenId, false));//TODO
-                    clientPlayNetworkHandler.sendPacket(new ClickSlotC2SPacket(screenId, screenId, slot, 0, SlotActionType.PICKUP, ItemStack.EMPTY, new Int2ObjectOpenHashMap<>()));
-                }
+        if (crafterOperation) {
+            PlayerBlockAction.openScreenAction.taskQueue.offer(() -> {
+                for (int slot = 0; slot < crafterSlot.size(); slot++) {
+                    boolean isDisable = crafterSlot.get(slot);
+                    if (isDisable) {
+                        clientPlayNetworkHandler.sendPacket(new SlotChangedStateC2SPacket(slot, EasyPlaceFix.screenId, false));//TODO
+                        clientPlayNetworkHandler.sendPacket(new ClickSlotC2SPacket(EasyPlaceFix.screenId, EasyPlaceFix.screenId, slot, 0, SlotActionType.PICKUP, ItemStack.EMPTY, new Int2ObjectOpenHashMap<>()));
+                    }
 
-            }
-            crafterOperation = false;
-            syn = true;
-            clientPlayNetworkHandler.sendPacket(new CloseHandledScreenC2SPacket(screenId));
-            //TODO 整个操作有不同步风险，但是操作很快结束，暂时体现不出来
-        };
+                }
+                clientPlayNetworkHandler.sendPacket(new CloseHandledScreenC2SPacket(EasyPlaceFix.screenId));
+            });
+            clientPlayNetworkHandler.sendPacket(new PlayerInteractBlockC2SPacket(Hand.MAIN_HAND,blockHitResult,0));
+        }
 
 
 //        var BlockActionPacket = new PlayerInteractBlockC2SPacket(

@@ -76,7 +76,8 @@
     "packet.MixinPlayerMoveC2SPacket",
     "packet.MixinPlayerMoveC2SPacket$full",
     "packet.MixinPlayerMoveC2SPacket$LookAndOnGround",
-    "packet.MixinScreenHandlerPropertyUpdateS2CPacket"
+    "packet.MixinScreenHandlerPropertyUpdateS2CPacket",
+    "packet.MixinSignEditorOpenS2CPacket"
   ],
   "client": [
     "MixinClientPlayerInteractionManager",
