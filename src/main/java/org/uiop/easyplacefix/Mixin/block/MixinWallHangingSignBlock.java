@@ -18,7 +18,10 @@ import org.uiop.easyplacefix.LookAt;
 public abstract class MixinWallHangingSignBlock implements IBlock {
     @Shadow
     public abstract boolean canAttachAt(BlockState state, WorldView world, BlockPos pos);
-
+    @Override
+    public void BlockAction(BlockState blockState, BlockHitResult blockHitResult) {
+        MinecraftClient.getInstance().player.closeHandledScreen();
+    }
     @Override
     public long sleepTime(BlockState blockState) {
         return 50_000_000;

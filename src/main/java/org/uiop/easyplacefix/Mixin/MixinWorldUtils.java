@@ -27,12 +27,12 @@ public abstract class MixinWorldUtils {
         }
         return original.call(mc);
     }
-    @WrapMethod(method = "insertSignTextFromSchematic")
-    private static void insertSignTextFromSchematic(SignBlockEntity beClient, String[] screenTextArr, boolean front, Operation<Void> original) {
-        original.call(beClient,screenTextArr,front);
-        MinecraftClient.getInstance().player.closeHandledScreen();
-
-    }
+//    @WrapMethod(method = "insertSignTextFromSchematic")
+//    private static void insertSignTextFromSchematic(SignBlockEntity beClient, String[] screenTextArr, boolean front, Operation<Void> original) {
+//        original.call(beClient,screenTextArr,front);
+//        MinecraftClient.getInstance().player.closeHandledScreen();
+//
+//    }
 }
 
 

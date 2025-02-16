@@ -39,4 +39,9 @@ public abstract class MixinWallSignBlock implements IBlock {
                         ), 1
                 ) : null;
     }
+
+    @Override
+    public void BlockAction(BlockState blockState, BlockHitResult blockHitResult) {
+        MinecraftClient.getInstance().player.closeHandledScreen();
+    }
 }

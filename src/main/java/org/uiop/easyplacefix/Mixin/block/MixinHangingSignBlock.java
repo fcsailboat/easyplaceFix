@@ -46,4 +46,8 @@ public abstract class MixinHangingSignBlock implements IBlock {
                                 false)
                         , 1) : null;
     }
+    @Override
+    public void BlockAction(BlockState blockState, BlockHitResult blockHitResult) {
+        MinecraftClient.getInstance().player.closeHandledScreen();
+    }
 }

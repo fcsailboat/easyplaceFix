@@ -21,7 +21,10 @@ import static org.uiop.easyplacefix.until.PlayerRotationAction.limitYawRotation;
 public abstract class MixinSignBlock implements IBlock {
     @Shadow
     protected abstract boolean canPlaceAt(BlockState state, WorldView world, BlockPos pos);
-
+    @Override
+    public void BlockAction(BlockState blockState, BlockHitResult blockHitResult) {
+        MinecraftClient.getInstance().player.closeHandledScreen();
+    }
     @Override
     public Pair<Float, Float> getLimitYawAndPitch(BlockState blockState) {
         Pair<LookAt, LookAt> lookAtPair = getYawAndPitch(blockState);
