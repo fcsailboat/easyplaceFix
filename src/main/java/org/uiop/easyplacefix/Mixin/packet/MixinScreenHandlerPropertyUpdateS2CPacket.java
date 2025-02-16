@@ -5,6 +5,7 @@ import net.minecraft.network.listener.ClientPlayPacketListener;
 import net.minecraft.network.packet.s2c.play.ScreenHandlerPropertyUpdateS2CPacket;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
+import org.uiop.easyplacefix.until.PlayerBlockAction;
 
 import static org.uiop.easyplacefix.EasyPlaceFix.*;
 
@@ -18,13 +19,6 @@ public class MixinScreenHandlerPropertyUpdateS2CPacket {//这是更新插槽状�
                             "onScreenHandlerPropertyUpdate(Lnet/minecraft/network/packet/s2c/play/ScreenHandlerPropertyUpdateS2CPacket;)V"
             ))
     private boolean updateFail(ClientPlayPacketListener instance, ScreenHandlerPropertyUpdateS2CPacket screenHandlerPropertyUpdateS2CPacket) {
-        if (crafterOperation && syn) {
-            syn = false;
-            screenId = screenHandlerPropertyUpdateS2CPacket.getSyncId();
-            aaa.run();
-            aaa=null;
-            return false;
-        }
-        return !crafterOperation;
+        return PlayerBlockAction.openScreenAction.waitAction();
     }
 }

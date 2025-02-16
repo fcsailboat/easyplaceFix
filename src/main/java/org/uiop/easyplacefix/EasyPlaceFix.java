@@ -32,9 +32,6 @@ public class EasyPlaceFix implements ModInitializer {
     public static List<Boolean> crafterSlot = new ArrayList<>(Arrays.asList(false, false, false, false, false, false, false, false, false));
     public static boolean crafterOperation = false;
     public static Integer screenId;
-    public static boolean syn = true;
-    public static Runnable aaa;
-    public static boolean loosenMode = false;
     public static ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 //    public static AtomicBoolean isRun = new AtomicBoolean();
     // 初始化线程安全的Set
