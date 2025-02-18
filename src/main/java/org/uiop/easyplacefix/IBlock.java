@@ -1,6 +1,7 @@
 package org.uiop.easyplacefix;
 
 import net.minecraft.block.BlockState;
+import net.minecraft.block.DeadCoralFanBlock;
 import net.minecraft.item.Item;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Pair;
@@ -41,6 +42,8 @@ public interface IBlock {
 
     default void BlockAction(BlockState blockState, BlockHitResult blockHitResult) {
     }
+    default void firstAction(){}
+    default void afterAction(){}
     default ActionResult isSchemaTermination(BlockPos pos, BlockState blockState, BlockState worldBlockstate){return null;}
     default ActionResult isWorldTermination(BlockPos pos, BlockState blockState,BlockState worldBlockstate){return null;}
     default Item getItemForBlockState(BlockState blockState){return null;}

@@ -231,30 +231,33 @@ public class doEasyPlace {//TODO 轻松放置重写计划
 //                        BlockReRender.blockRender(stateSchematic,pos);
 //                        mc.getNetworkHandler().sendPacket(new PlayerInteractBlockC2SPacket(finalHand, offsetBlockhitResult, 0));
                         mc.execute(()->{
+                            ((IBlock)block).firstAction();
                             interactionManager.interactBlock(
                                     mc.player,
                                     finalHand,
                                     offsetBlockhitResult
                             );
                             mc.player.swingHand(finalHand);
-                        });
-                        int i = 1;
-                        while (i < blockHitResultIntegerPair.getRight()) {
-                            mc.execute(()->{
+                            int i = 1;
+                            while (i < blockHitResultIntegerPair.getRight()) {
+
                                 interactionManager.interactBlock(
                                         mc.player,
                                         finalHand,
                                         trace
                                 );
                                 mc.player.swingHand(finalHand);
-                            });
-                            i++;
-                        }
+
+                                i++;
+                            }
+                            ((IBlock)block).afterAction();
+                        });
+
                         mc.execute(()-> ((IBlock) block).BlockAction(stateSchematic, trace));
 
-                        PlayerRotationAction.setServerBoundPlayerRotation(mc.player.getYaw(), mc.player.getPitch(), mc.player.horizontalCollision);
                     }finally {
                        mc.execute(()->{
+                           PlayerRotationAction.setServerBoundPlayerRotation(mc.player.getYaw(), mc.player.getPitch(), mc.player.horizontalCollision);
                            notChangPlayerLook = false;
                            concurrentSet.remove(pos);
                        });

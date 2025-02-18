@@ -25,6 +25,23 @@ public class MixinChestBlock implements IBlock {
     public static EnumProperty<ChestType> CHEST_TYPE;
 
     @Override
+    public void firstAction() {
+        MinecraftClient.getInstance().getNetworkHandler().sendPacket(new ClientCommandC2SPacket(
+                MinecraftClient.getInstance().player, ClientCommandC2SPacket.Mode.PRESS_SHIFT_KEY
+        ));
+    }
+
+    @Override
+    public void afterAction() {
+        MinecraftClient.getInstance().getNetworkHandler().sendPacket(
+                new ClientCommandC2SPacket(
+                MinecraftClient.getInstance().player,
+                        ClientCommandC2SPacket.Mode.RELEASE_SHIFT_KEY
+        ));
+
+    }
+
+    @Override
     public Pair<BlockHitResult, Integer> getHitResult(BlockState blockState, BlockPos blockPos, BlockState worldBlockState) {
 
         ChestType chestType = blockState.get(Properties.CHEST_TYPE);
@@ -46,9 +63,7 @@ public class MixinChestBlock implements IBlock {
             blockFace = blockFace.rotateYClockwise();
         }
         BlockPos offset = blockPos.offset(blockFace.getOpposite());
-        MinecraftClient.getInstance().getNetworkHandler().sendPacket(new ClientCommandC2SPacket(
-                MinecraftClient.getInstance().player, ClientCommandC2SPacket.Mode.PRESS_SHIFT_KEY
-        ));
+
         return new Pair<>(new BlockHitResult(
                 switch (blockFace) {
                     case EAST -> new Vec3d(0.9, 0.5, 0.5);
@@ -63,16 +78,6 @@ public class MixinChestBlock implements IBlock {
                 , false
         ), 1);
 
-
-    }
-
-    @Override
-    public void BlockAction(BlockState blockState, BlockHitResult blockHitResult) {
-
-
-        MinecraftClient.getInstance().getNetworkHandler().sendPacket(new ClientCommandC2SPacket(
-                MinecraftClient.getInstance().player, ClientCommandC2SPacket.Mode.RELEASE_SHIFT_KEY
-        ));
 
     }
 }
