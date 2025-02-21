@@ -1,6 +1,5 @@
 package org.uiop.easyplacefix.until;
 
-import fi.dy.masa.litematica.config.Configs;
 import fi.dy.masa.litematica.data.DataManager;
 import fi.dy.masa.litematica.schematic.placement.SchematicPlacementManager;
 import fi.dy.masa.litematica.util.EntityUtils;
@@ -10,27 +9,20 @@ import fi.dy.masa.litematica.world.SchematicWorldHandler;
 import net.minecraft.block.*;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerInteractionManager;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.network.packet.c2s.play.HandSwingC2SPacket;
-import net.minecraft.network.packet.c2s.play.PlayerInteractBlockC2SPacket;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Pair;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.uiop.easyplacefix.EasyPlaceFix;
 import org.uiop.easyplacefix.IBlock;
 import org.uiop.easyplacefix.IClientPlayerInteractionManager;
-import org.uiop.easyplacefix.LookAt;
 import org.uiop.easyplacefix.data.LoosenModeData;
 
 import java.util.HashSet;
@@ -38,11 +30,9 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 
-import static fi.dy.masa.litematica.util.WorldUtils.getValidBlockRange;
 import static org.uiop.easyplacefix.EasyPlaceFix.*;
 import static org.uiop.easyplacefix.config.easyPlacefixConfig.LOOSEN_MODE;
 import static org.uiop.easyplacefix.data.LoosenModeData.items;
-import static org.uiop.easyplacefix.until.PlayerRotationAction.limitYawRotation;
 
 public class doEasyPlace {//TODO 轻松放置重写计划
 
@@ -60,86 +50,87 @@ public class doEasyPlace {//TODO 轻松放置重写计划
         }
         return false;
     }
-    public static Hand loosenMode2(HashSet<ItemStack> itemStackHashSet){
 
-            for (int i=0;i<MinecraftClient.getInstance().player.getInventory().size();i++){
-                ItemStack stack = MinecraftClient.getInstance().player.getInventory().getStack(i);
-                stack =stack.copy();
+    public static Hand loosenMode2(HashSet<ItemStack> itemStackHashSet) {
+
+        for (int i = 0; i < MinecraftClient.getInstance().player.getInventory().size(); i++) {
+            ItemStack stack = MinecraftClient.getInstance().player.getInventory().getStack(i);
+            stack = stack.copy();
 //                HashSet<Item> items =new HashSet<>();
 //                for (ItemStack itemStack :itemStackHashSet){
 //                    items.add(itemStack.getItem());
 //                }
-                if (!stack.isEmpty()) {
-                   if (items.contains(stack.getItem())){
-                       InventoryUtils.setPickedItemToHand(i, stack.copy(), MinecraftClient.getInstance());
-                       return Hand.MAIN_HAND; // 找到满足条件的物品堆，返回其槽位
-                   }
-
-
+            if (!stack.isEmpty()) {
+                if (items.contains(stack.getItem())) {
+                    InventoryUtils.setPickedItemToHand(i, stack.copy(), MinecraftClient.getInstance());
+                    return Hand.MAIN_HAND; // 找到满足条件的物品堆，返回其槽位
                 }
+
+
             }
+        }
 
         return null;
 
 
     }
-    public static Hand loosenMode(Hand hand,ItemStack stack,BlockState stateSchema)
-    {
+
+    public static Hand loosenMode(Hand hand, ItemStack stack, BlockState stateSchema) {
         if (hand == null && LOOSEN_MODE.getBooleanValue()) {
             if (!stack.isEmpty()) {
-            if (!EntityUtils.isCreativeMode(MinecraftClient.getInstance().player)) {
-                Block ReplacedBlock = stateSchema.getBlock();//将被替换的item对应的方块
-                Predicate<Block> predicate = null;
-                if (ReplacedBlock instanceof WallBlock)   //墙类
-                    predicate = block -> block instanceof WallBlock;
-                else if (ReplacedBlock instanceof FenceGateBlock)//栅栏门
-                    predicate = block -> block instanceof FenceGateBlock;
-                else if (ReplacedBlock instanceof TrapdoorBlock)//活板门
-                    predicate = block -> block instanceof TrapdoorBlock;
-                else if (ReplacedBlock instanceof CoralFanBlock)//珊瑚扇
-                    predicate = block -> block instanceof CoralFanBlock;
-                Hand hand1 = null;
-                if (predicate != null) {
-                    PlayerInventory playerInventory = MinecraftClient.getInstance().player.getInventory();
-                     hand1 = findBlockInInventory(playerInventory, predicate);
-                }
-                if (hand1==null){
-                    HashSet<ItemStack> itemStackHashSet = LoosenModeData.loadFromFile();
-                    return loosenMode2(itemStackHashSet);
+                if (!EntityUtils.isCreativeMode(MinecraftClient.getInstance().player)) {
+                    Block ReplacedBlock = stateSchema.getBlock();//将被替换的item对应的方块
+                    Predicate<Block> predicate = null;
+                    if (ReplacedBlock instanceof WallBlock)   //墙类
+                        predicate = block -> block instanceof WallBlock;
+                    else if (ReplacedBlock instanceof FenceGateBlock)//栅栏门
+                        predicate = block -> block instanceof FenceGateBlock;
+                    else if (ReplacedBlock instanceof TrapdoorBlock)//活板门
+                        predicate = block -> block instanceof TrapdoorBlock;
+                    else if (ReplacedBlock instanceof CoralFanBlock)//珊瑚扇
+                        predicate = block -> block instanceof CoralFanBlock;
+                    Hand hand1 = null;
+                    if (predicate != null) {
+                        PlayerInventory playerInventory = MinecraftClient.getInstance().player.getInventory();
+                        hand1 = findBlockInInventory(playerInventory, predicate);
+                    }
+                    if (hand1 == null) {
+                        HashSet<ItemStack> itemStackHashSet = LoosenModeData.loadFromFile();
+                        return loosenMode2(itemStackHashSet);
+
+                    }
+                    return hand1;
 
                 }
-                return hand1;
-
-            }}
+            }
 
         }
         return hand;
     }
 
-    public static ActionResult doEasyPlace2(MinecraftClient mc, HitResult traceVanilla, RayTraceUtils. RayTraceWrapper traceWrapper){
+    public static ActionResult doEasyPlace2(MinecraftClient mc, HitResult traceVanilla, RayTraceUtils.RayTraceWrapper traceWrapper) {
         BlockHitResult trace;
-        trace= traceWrapper.getBlockHitResult();
+        trace = traceWrapper.getBlockHitResult();
         World schematicWorld = SchematicWorldHandler.getSchematicWorld();
         BlockPos pos = trace.getBlockPos();
         BlockState stateClient = mc.world.getBlockState(pos);//获取本地方块状态
         BlockState stateSchematic = schematicWorld.getBlockState(pos);
-        if (concurrentSet.contains(pos))return ActionResult.FAIL;
+        if (concurrentSet.contains(pos)) return ActionResult.FAIL;
         ActionResult isTermination = ((IBlock) stateClient.getBlock()).isWorldTermination(pos, stateSchematic, stateClient);//是否终止
         if (isTermination != null) return isTermination;
 
-        isTermination = ((IBlock)stateSchematic.getBlock()).isSchemaTermination(pos,stateSchematic,stateClient);//是否终止
-        if (isTermination!=null)return isTermination;
+        isTermination = ((IBlock) stateSchematic.getBlock()).isSchemaTermination(pos, stateSchematic, stateClient);//是否终止
+        if (isTermination != null) return isTermination;
 
 
         //MISS会在指针没有目标时(列如：指向空中)，不包括投影方块
-        if (traceVanilla.getType()== HitResult.Type.ENTITY)
-        {
+        if (traceVanilla.getType() == HitResult.Type.ENTITY) {
             return ActionResult.PASS;
         }
-        if (traceWrapper.getHitType() == RayTraceUtils.RayTraceWrapper.HitType.SCHEMATIC_BLOCK){
+        if (traceWrapper.getHitType() == RayTraceUtils.RayTraceWrapper.HitType.SCHEMATIC_BLOCK) {
 
-            ItemStack stack = new ItemStack(((IBlock)stateSchematic.getBlock()).getItemForBlockState(stateSchematic));
-            if (!stack.isEmpty()){
+            ItemStack stack = new ItemStack(((IBlock) stateSchematic.getBlock()).getItemForBlockState(stateSchematic));
+            if (!stack.isEmpty()) {
 
                 if (stateSchematic == mc.world.getBlockState(pos))//对比
                 {
@@ -153,18 +144,14 @@ public class doEasyPlace {//TODO 轻松放置重写计划
                                 stack,
                                 trace
                         ))
-                )return ActionResult.FAIL;
-
-
-
+                ) return ActionResult.FAIL;
 
 
                 ClientPlayerInteractionManager interactionManager = MinecraftClient.getInstance().interactionManager;
                 InventoryUtils.schematicWorldPickBlock(stack, pos, schematicWorld, mc);
                 Hand hand = EntityUtils.getUsedHandForItem(mc.player, stack);
-                hand = loosenMode(hand,stack,stateSchematic);
-                if (hand == null)
-                {
+                hand = loosenMode(hand, stack, stateSchematic);
+                if (hand == null) {
                     return ActionResult.FAIL;
                 }
                 Block block = stateSchematic.getBlock();
@@ -175,7 +162,7 @@ public class doEasyPlace {//TODO 轻松放置重写计划
                                 stateSchematic,
                                 trace.getBlockPos(),
                                 stateClient
-                                );
+                        );
 
                 if (blockHitResultIntegerPair == null) return ActionResult.FAIL;
 
@@ -202,9 +189,9 @@ public class doEasyPlace {//TODO 轻松放置重写计划
                         Pair<Float, Float> lookAtPair = ((IBlock) block).getLimitYawAndPitch(stateSchematic);
                         if (lookAtPair != null) {
                             yawLock = lookAtPair.getLeft();
-                            pitchLock =lookAtPair.getRight();
+                            pitchLock = lookAtPair.getRight();
                             notChangPlayerLook = true;
-                            mc.execute(()->PlayerRotationAction.setServerBoundPlayerRotation(yawLock, pitchLock, mc.player.horizontalCollision));
+                            mc.execute(() -> PlayerRotationAction.setServerBoundPlayerRotation(yawLock, pitchLock, mc.player.horizontalCollision));
                         }
                         long delay = ((IBlock) block).sleepTime(stateSchematic);
                         try {
@@ -215,8 +202,8 @@ public class doEasyPlace {//TODO 轻松放置重写计划
                         ((IClientPlayerInteractionManager) interactionManager).syn();//同步快捷栏的选择框
 //                        BlockReRender.blockRender(stateSchematic,pos);
 //                        mc.getNetworkHandler().sendPacket(new PlayerInteractBlockC2SPacket(finalHand, offsetBlockhitResult, 0));
-                        mc.execute(()->{
-                            ((IBlock)block).firstAction();
+                        mc.execute(() -> {
+                            ((IBlock) block).firstAction();
                             interactionManager.interactBlock(
                                     mc.player,
                                     finalHand,
@@ -235,17 +222,17 @@ public class doEasyPlace {//TODO 轻松放置重写计划
 
                                 i++;
                             }
-                            ((IBlock)block).afterAction();
+                            ((IBlock) block).afterAction();
                         });
 
-                        mc.execute(()-> ((IBlock) block).BlockAction(stateSchematic, trace));
+                        mc.execute(() -> ((IBlock) block).BlockAction(stateSchematic, trace));
 
-                    }finally {
-                       mc.execute(()->{
-                           PlayerRotationAction.setServerBoundPlayerRotation(mc.player.getYaw(), mc.player.getPitch(), mc.player.horizontalCollision);
-                           notChangPlayerLook = false;
-                           concurrentSet.remove(pos);
-                       });
+                    } finally {
+                        mc.execute(() -> {
+                            PlayerRotationAction.setServerBoundPlayerRotation(mc.player.getYaw(), mc.player.getPitch(), mc.player.horizontalCollision);
+                            notChangPlayerLook = false;
+                            concurrentSet.remove(pos);
+                        });
                     }
 
 
