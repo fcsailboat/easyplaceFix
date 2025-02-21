@@ -116,23 +116,8 @@ public class doEasyPlace {//TODO 轻松放置重写计划
         return hand;
     }
 
-    public static ActionResult doEasyPlace2(MinecraftClient mc){
-        RayTraceUtils.RayTraceWrapper traceWrapper;
+    public static ActionResult doEasyPlace2(MinecraftClient mc, HitResult traceVanilla, RayTraceUtils. RayTraceWrapper traceWrapper){
         BlockHitResult trace;
-        double traceMaxRange = getValidBlockRange(mc);
-        HitResult traceVanilla = RayTraceUtils.getRayTraceFromEntity(mc.world, mc.player, false, traceMaxRange);
-        if (Configs.Generic.EASY_PLACE_FIRST.getBooleanValue())
-        {
-            // Temporary hack, using this same config here
-            boolean targetFluids = Configs.InfoOverlays.INFO_OVERLAYS_TARGET_FLUIDS.getBooleanValue();
-            traceWrapper = RayTraceUtils.getGenericTrace(mc.world, mc.player, traceMaxRange, true, targetFluids, false);
-        }
-        else
-        {
-//            Configs.Generic.EASY_PLACE_FIRST.setBooleanValue(true); 紧急方案[Doge]
-            traceWrapper = RayTraceUtils.getFurthestSchematicWorldTraceBeforeVanilla(mc.world, mc.player, traceMaxRange);
-        }
-        if (traceWrapper==null)return ActionResult.PASS;
         trace= traceWrapper.getBlockHitResult();
         World schematicWorld = SchematicWorldHandler.getSchematicWorld();
         BlockPos pos = trace.getBlockPos();
