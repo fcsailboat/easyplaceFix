@@ -71,14 +71,14 @@ public class EasyPlaceFix implements ModInitializer {
                 );
     }
 
-    public static Hand findBlockInInventory(PlayerInventory inv, Predicate<Block> predicate) {
+    public static ItemStack findBlockInInventory(PlayerInventory inv, Predicate<Block> predicate) {
         for (int slot = 0; slot < inv.size(); slot++) {
             ItemStack stack = inv.getStack(slot);
             if (!stack.isEmpty()) {
                 Block block = Block.getBlockFromItem(stack.getItem());
                 if (predicate.test(block)) {
-                    InventoryUtils.setPickedItemToHand(slot, stack, MinecraftClient.getInstance());
-                    return Hand.MAIN_HAND; // 找到满足条件的物品堆，返回其槽位
+//                    InventoryUtils.setPickedItemToHand(slot, stack, MinecraftClient.getInstance());
+                    return stack; // 找到满足条件的物品堆，返回其槽位
                 }
             }
         }
