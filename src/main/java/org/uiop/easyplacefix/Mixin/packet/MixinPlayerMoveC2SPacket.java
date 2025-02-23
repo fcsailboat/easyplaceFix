@@ -1,5 +1,6 @@
 package org.uiop.easyplacefix.Mixin.packet;
 
+import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Mutable;
@@ -26,8 +27,8 @@ public interface MixinPlayerMoveC2SPacket {
     class full {
 
 
-        @Inject(method = "<init>", at = @At("RETURN"))
-        private void lockLook(double x, double y, double z, float yaw, float pitch, boolean onGround, boolean horizontalCollision, CallbackInfo ci) {
+        @Inject(method = "write", at = @At("HEAD"))
+        private void lockLook(PacketByteBuf buf, CallbackInfo ci) {
             if (notChangPlayerLook) {
                 ((MixinPlayerMoveC2SPacket) this).setYaw(yawLock);
                 ((MixinPlayerMoveC2SPacket) this).setPitch(pitchLock);
@@ -39,8 +40,8 @@ public interface MixinPlayerMoveC2SPacket {
 
     @Mixin(PlayerMoveC2SPacket.LookAndOnGround.class)
     class LookAndOnGround {
-        @Inject(method = "<init>", at = @At("RETURN"))
-        private void lockLook(float yaw, float pitch, boolean onGround, boolean horizontalCollision, CallbackInfo ci) {
+        @Inject(method = "write", at = @At("HEAD"))
+        private void lockLook(PacketByteBuf buf, CallbackInfo ci) {
             if (notChangPlayerLook) {
                 ((MixinPlayerMoveC2SPacket) this).setYaw(yawLock);
                 ((MixinPlayerMoveC2SPacket) this).setPitch(pitchLock);

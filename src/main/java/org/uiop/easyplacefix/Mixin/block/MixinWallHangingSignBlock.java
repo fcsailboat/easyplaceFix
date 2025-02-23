@@ -78,7 +78,7 @@ public abstract class MixinWallHangingSignBlock implements IBlock {
     }
     @Override
     public long sleepTime(BlockState blockState) {
-        return 60_000_000;
+        return 50_000_000;
     }
 
     //TODO 这里可以不用朝向数据包，但是我没看懂她是怎么判断周围有没有可以依附的方块的，暂时先发送朝向数据包

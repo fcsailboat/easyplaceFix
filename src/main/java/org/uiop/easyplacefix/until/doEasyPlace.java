@@ -2,17 +2,25 @@ package org.uiop.easyplacefix.until;
 
 import fi.dy.masa.litematica.config.Configs;
 import fi.dy.masa.litematica.data.DataManager;
+import fi.dy.masa.litematica.materials.MaterialCache;
 import fi.dy.masa.litematica.schematic.placement.SchematicPlacementManager;
 import fi.dy.masa.litematica.util.EntityUtils;
 import fi.dy.masa.litematica.util.InventoryUtils;
 import fi.dy.masa.litematica.util.RayTraceUtils;
 import fi.dy.masa.litematica.world.SchematicWorldHandler;
+import fi.dy.masa.malilib.util.LayerRange;
+import io.netty.channel.Channel;
+import net.fabricmc.fabric.api.client.networking.v1.C2SConfigurationChannelEvents;
 import net.minecraft.block.*;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerInteractionManager;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.ItemUsageContext;
+import net.minecraft.network.packet.c2s.play.PlayerInteractBlockC2SPacket;
+import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
+import net.minecraft.state.property.Properties;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Pair;
@@ -23,6 +31,7 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.uiop.easyplacefix.IBlock;
 import org.uiop.easyplacefix.IClientPlayerInteractionManager;
+import org.uiop.easyplacefix.Mixin.AccessorMixin.ClientConnectionAccessor;
 import org.uiop.easyplacefix.data.LoosenModeData;
 
 import java.util.HashSet;
@@ -34,6 +43,7 @@ import java.util.function.Predicate;
 import static fi.dy.masa.litematica.util.InventoryUtils.findSlotWithBoxWithItem;
 import static fi.dy.masa.litematica.util.InventoryUtils.setPickedItemToHand;
 import static fi.dy.masa.litematica.util.WorldUtils.getValidBlockRange;
+import static fi.dy.masa.litematica.util.WorldUtils.isPositionWithinRangeOfSchematicRegions;
 import static org.uiop.easyplacefix.EasyPlaceFix.*;
 import static org.uiop.easyplacefix.config.easyPlacefixConfig.LOOSEN_MODE;
 import static org.uiop.easyplacefix.data.LoosenModeData.items;
@@ -190,6 +200,19 @@ public class doEasyPlace {//TODO 轻松放置重写计划
                 scheduler.schedule(() -> {
                     AtomicReference<Hand> hand = new AtomicReference<>();
                     try {
+                        Channel channel = ((ClientConnectionAccessor) mc.getNetworkHandler().getConnection()).getChannel();
+//
+//// 发送朝向数据包
+//                        channel.writeAndFlush(new PlayerMoveC2SPacket.LookAndOnGround(yawLock, pitchLock, true))
+//                                .addListener(future -> {
+//                                    // 延迟后发送方块交互包
+//                                    channel.eventLoop().schedule(() -> {
+//                                        PlayerInteractBlockC2SPacket packet = new PlayerInteractBlockC2SPacket(
+//                                                hand, offsetBlockhitResult, 0
+//                                        );
+//                                        channel.writeAndFlush(packet);
+//                                    }, ((IBlock) block).sleepTime(stateSchematic), TimeUnit.MILLISECONDS);
+//                                });
                         mc.execute(()->{
 //                            InventoryUtils.schematicWorldPickBlock(finalStack, pos, schematicWorld, mc);
                             pickItem(mc,finalStack);
@@ -200,6 +223,13 @@ public class doEasyPlace {//TODO 轻松放置重写计划
                             yawLock = lookAtPair.getLeft();
                             pitchLock = lookAtPair.getRight();
                             notChangPlayerLook = true;
+//                            channel.writeAndFlush( new PlayerMoveC2SPacket.LookAndOnGround(
+//                                    yawLock,
+//                                    pitchLock,
+//                                    MinecraftClient.getInstance().player.isOnGround(),
+//                                    mc.player.horizontalCollision//不知道干嘛的参数
+//
+//                            ));
                             mc.execute(() -> PlayerRotationAction.setServerBoundPlayerRotation(yawLock, pitchLock, mc.player.horizontalCollision));
                         }
                         long delay = ((IBlock) block).sleepTime(stateSchematic);
@@ -208,13 +238,11 @@ public class doEasyPlace {//TODO 轻松放置重写计划
                         } catch (InterruptedException e) {
                             throw new RuntimeException(e);
                         }
-                        mc.execute(() ->{
-                            ((IClientPlayerInteractionManager) interactionManager).syn();
-                        });//同步快捷栏的选择框
-
-//                        BlockReRender.blockRender(stateSchematic,pos);
-//                        mc.getNetworkHandler().sendPacket(new PlayerInteractBlockC2SPacket(finalHand, offsetBlockhitResult, 0));
+//                        channel.writeAndFlush( new PlayerInteractBlockC2SPacket(
+//                                                hand.get(), offsetBlockhitResult, 0
+//                                        ));
                         mc.execute(() -> {
+                            ((IClientPlayerInteractionManager) interactionManager).syn();
                             ((IBlock) block).firstAction();
                             interactionManager.interactBlock(
                                     mc.player,
@@ -235,29 +263,32 @@ public class doEasyPlace {//TODO 轻松放置重写计划
                                 i++;
                             }
                             ((IBlock) block).afterAction();
-                        });
-
-                        mc.execute(() -> {
-                                    ((IBlock) block).BlockAction(stateSchematic, trace);
-                                    PlayerRotationAction.setServerBoundPlayerRotation(
-                                            mc.player.getYaw(),
-                                            mc.player.getPitch(),
-                                            mc.player.horizontalCollision);
-                                }
-                        );
-                    } finally {
-                        mc.execute(() -> {
+                            ((IBlock) block).BlockAction(stateSchematic, trace);
                             notChangPlayerLook = false;
+                            PlayerRotationAction.setServerBoundPlayerRotation(
+                                    mc.player.getYaw(),
+                                    mc.player.getPitch(),
+                                    mc.player.horizontalCollision);
                             concurrentSet.remove(pos);
                         });
-
+                    }finally {
+                        if (notChangPlayerLook){
+                            notChangPlayerLook = false;
+                            concurrentSet.remove(pos);
+                        }
                     }
+
+
+
+
+
 
 
                 }, 0, TimeUnit.NANOSECONDS);
                 return ActionResult.SUCCESS;
             }
         }
+//        if (placementRestrictionInEffect(pos))return ActionResult.FAIL;
         return ActionResult.PASS;
     }
 
@@ -294,5 +325,13 @@ public class doEasyPlace {//TODO 轻松放置重写计划
         } else{
             setPickedItemToHand(stack,mc);
         }
+    }
+    private static boolean placementRestrictionInEffect(BlockPos pos)
+    {
+
+        ;//获取mc的准星坐标
+         //目标位置不应有任何物品，
+        //并且该位置位于逻辑示意图子区域内或附近
+        return  isPositionWithinRangeOfSchematicRegions( pos, 2);
     }
 }

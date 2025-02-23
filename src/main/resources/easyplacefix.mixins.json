@@ -8,6 +8,7 @@
     "MixinInventoryUtils",
     "MixinPistonBlock",
     "MixinWorldUtils",
+    "AccessorMixin.ClientConnectionAccessor",
     "block.MixinAbstractChestBlock",
     "block.MixinAbstractFurnaceBlock",
     "block.MixinAbstractRailBlock",
