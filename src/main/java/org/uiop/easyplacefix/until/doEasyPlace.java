@@ -91,7 +91,6 @@ public class doEasyPlace {//TODO 轻松放置重写计划
 
     public static ItemStack loosenMode(ItemStack stack, BlockState stateSchema) {
         if (stack == null && LOOSEN_MODE.getBooleanValue()) {
-            if (!stack.isEmpty()) {
                 if (!EntityUtils.isCreativeMode(MinecraftClient.getInstance().player)) {
                     Block ReplacedBlock = stateSchema.getBlock();//将被替换的item对应的方块
                     Predicate<Block> predicate = null;
@@ -103,20 +102,20 @@ public class doEasyPlace {//TODO 轻松放置重写计划
                         predicate = block -> block instanceof TrapdoorBlock;
                     else if (ReplacedBlock instanceof CoralFanBlock)//珊瑚扇
                         predicate = block -> block instanceof CoralFanBlock;
-                    ItemStack hand1 = null;
+                    ItemStack stack1 = null;
                     if (predicate != null) {
                         PlayerInventory playerInventory = MinecraftClient.getInstance().player.getInventory();
-                        hand1 = findBlockInInventory(playerInventory, predicate);
+                        stack1 = findBlockInInventory(playerInventory, predicate);
                     }
-                    if (hand1 == null) {
+                    if (stack1 == null) {
                         HashSet<ItemStack> itemStackHashSet = LoosenModeData.loadFromFile();
                         return loosenMode2(itemStackHashSet);
 
                     }
-                    return hand1;
+                    return stack1;
 
                 }
-            }
+
 
         }
         return stack;
@@ -163,7 +162,8 @@ public class doEasyPlace {//TODO 轻松放置重写计划
 
                 ClientPlayerInteractionManager interactionManager = MinecraftClient.getInstance().interactionManager;
                 ItemStack itemStack2 = searchItem(mc, stack);
-                itemStack2 = loosenMode(itemStack2, stateSchematic);
+               itemStack2 = loosenMode(itemStack2, stateSchematic);
+
                 if (itemStack2 == null) {
                     return ActionResult.FAIL;
                 }
@@ -197,6 +197,7 @@ public class doEasyPlace {//TODO 轻松放置重写计划
                 }
                 ItemStack finalStack = itemStack2;
                 concurrentSet.add(pos);
+
                 scheduler.schedule(() -> {
                     AtomicReference<Hand> hand = new AtomicReference<>();
                     try {
@@ -265,11 +266,18 @@ public class doEasyPlace {//TODO 轻松放置重写计划
                             ((IBlock) block).afterAction();
                             ((IBlock) block).BlockAction(stateSchematic, trace);
                             notChangPlayerLook = false;
-                            PlayerRotationAction.setServerBoundPlayerRotation(
+//                            PlayerRotationAction.setServerBoundPlayerRotation(
+//                                    mc.player.getYaw(),
+//                                    mc.player.getPitch(),
+//                                    mc.player.horizontalCollision);
+                            channel.writeAndFlush(new PlayerMoveC2SPacket.LookAndOnGround(
                                     mc.player.getYaw(),
-                                    mc.player.getPitch(),
-                                    mc.player.horizontalCollision);
-                            concurrentSet.remove(pos);
+                                            mc.player.getPitch(),
+                                            mc.player.isOnGround(),
+                                            mc.player.horizontalCollision))
+                                .addListener(future -> {
+                                    concurrentSet.remove(pos);
+                                });
                         });
                     }finally {
                         if (notChangPlayerLook){
@@ -288,7 +296,7 @@ public class doEasyPlace {//TODO 轻松放置重写计划
                 return ActionResult.SUCCESS;
             }
         }
-//        if (placementRestrictionInEffect(pos))return ActionResult.FAIL;
+        if (placementRestrictionInEffect(pos))return ActionResult.FAIL;
         return ActionResult.PASS;
     }
 
@@ -301,8 +309,7 @@ public class doEasyPlace {//TODO 轻松放置重写计划
                     return stack;
                 } else {
                     int slot = inv.getSlotWithStack(stack);
-                    boolean shouldPick = inv.selectedSlot != slot;
-                    if (shouldPick && slot != -1) {
+                    if ( slot != -1) {
                         return stack;
                     } else if (slot == -1 && Configs.Generic.PICK_BLOCK_SHULKERS.getBooleanValue()) {
                         slot = findSlotWithBoxWithItem(mc.player.playerScreenHandler, stack, false);
