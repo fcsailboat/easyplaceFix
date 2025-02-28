@@ -10,15 +10,16 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import org.spongepowered.asm.mixin.Mixin;
 import org.uiop.easyplacefix.IBlock;
+import org.uiop.easyplacefix.data.RelativeBlockHitResult;
 
 @Mixin(TripwireHookBlock.class)
 public class MixinTripwireHookBlock implements IBlock {
     @Override
-    public Pair<BlockHitResult, Integer> getHitResult(BlockState blockState, BlockPos blockPos, BlockState worldBlockState) {
+    public Pair<RelativeBlockHitResult, Integer> getHitResult(BlockState blockState, BlockPos blockPos, BlockState worldBlockState) {
         Direction direction = blockState.get(Properties.HORIZONTAL_FACING);
 
         return new Pair<>(
-                new BlockHitResult(
+                new RelativeBlockHitResult(
                         switch (direction) {
                             case EAST -> new Vec3d(1, 0.5, 0.5);
                             case SOUTH -> new Vec3d(0.5, 0.5, 1);

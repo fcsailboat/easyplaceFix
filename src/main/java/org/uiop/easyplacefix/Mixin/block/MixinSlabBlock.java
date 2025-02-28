@@ -12,20 +12,21 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import org.spongepowered.asm.mixin.Mixin;
 import org.uiop.easyplacefix.IBlock;
+import org.uiop.easyplacefix.data.RelativeBlockHitResult;
 
 @Mixin(SlabBlock.class)
 public class MixinSlabBlock implements IBlock {
     @Override
-    public Pair<BlockHitResult, Integer> getHitResult(BlockState blockState, BlockPos blockPos, BlockState worldBlockState) {
+    public Pair<RelativeBlockHitResult, Integer> getHitResult(BlockState blockState, BlockPos blockPos, BlockState worldBlockState) {
         SlabType slabType = blockState.get(Properties.SLAB_TYPE);
 
         if (blockState.getBlock().equals(worldBlockState.getBlock())){
             SlabType slabClientType = worldBlockState.get(Properties.SLAB_TYPE);
             if (slabType==SlabType.DOUBLE){
                 if (slabClientType==SlabType.TOP)
-                    return new Pair<>(new BlockHitResult(new Vec3d(0.5, 0, 0.5), Direction.UP, blockPos, false), 1);
+                    return new Pair<>(new RelativeBlockHitResult(new Vec3d(0.5, 0, 0.5), Direction.UP, blockPos, false), 1);
                 else
-                    return new Pair<>(new BlockHitResult(new Vec3d(0.5, 1, 0.5), Direction.DOWN, blockPos, false), 1);
+                    return new Pair<>(new RelativeBlockHitResult(new Vec3d(0.5, 1, 0.5), Direction.DOWN, blockPos, false), 1);
 
             }
             else {
@@ -34,9 +35,9 @@ public class MixinSlabBlock implements IBlock {
 
         }
         return switch (slabType) {
-            case TOP -> new Pair<>(new BlockHitResult(new Vec3d(0.5, 1, 0.5), Direction.DOWN, blockPos, false), 1);
-            case BOTTOM -> new Pair<>(new BlockHitResult(new Vec3d(0.5, 0, 0.5), Direction.UP, blockPos, false), 1);
-            case DOUBLE -> new Pair<>(new BlockHitResult(new Vec3d(0.5, 0.5, 0.5), Direction.UP, blockPos, false), 2);
+            case TOP -> new Pair<>(new RelativeBlockHitResult(new Vec3d(0.5, 1, 0.5), Direction.DOWN, blockPos, false), 1);
+            case BOTTOM -> new Pair<>(new RelativeBlockHitResult(new Vec3d(0.5, 0, 0.5), Direction.UP, blockPos, false), 1);
+            case DOUBLE -> new Pair<>(new RelativeBlockHitResult(new Vec3d(0.5, 0.5, 0.5), Direction.UP, blockPos, false), 2);
         };
 
     }

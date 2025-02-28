@@ -10,12 +10,13 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import org.spongepowered.asm.mixin.Mixin;
 import org.uiop.easyplacefix.IBlock;
+import org.uiop.easyplacefix.data.RelativeBlockHitResult;
 
 @Mixin(HopperBlock.class)
 public class MixinHopperBlock implements IBlock {
     @Override
-    public Pair<BlockHitResult, Integer> getHitResult(BlockState blockState, BlockPos blockPos, BlockState worldBlockState) {
-        return new Pair<>(new BlockHitResult(
+    public Pair<RelativeBlockHitResult, Integer> getHitResult(BlockState blockState, BlockPos blockPos, BlockState worldBlockState) {
+        return new Pair<>(new RelativeBlockHitResult(
                 new Vec3d(0.5, 0.5, 0.5),
                 switch (blockState.get(Properties.HOPPER_FACING)) {
                     case SOUTH -> Direction.NORTH;

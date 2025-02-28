@@ -13,6 +13,7 @@ import net.minecraft.util.math.Vec3d;
 import org.spongepowered.asm.mixin.Mixin;
 import org.uiop.easyplacefix.IBlock;
 import org.uiop.easyplacefix.LookAt;
+import org.uiop.easyplacefix.data.RelativeBlockHitResult;
 
 import static net.minecraft.block.WallMountedBlock.canPlaceAt;
 
@@ -44,25 +45,25 @@ public class MixinGrindstoneBlock implements IBlock {
     }
 
     @Override
-    public Pair<BlockHitResult, Integer> getHitResult(BlockState blockState, BlockPos blockPos, BlockState worldBlockState) {
+    public Pair<RelativeBlockHitResult, Integer> getHitResult(BlockState blockState, BlockPos blockPos, BlockState worldBlockState) {
         BlockFace blockFace = blockState.get(Properties.BLOCK_FACE);
         Direction direction = blockState.get(Properties.HORIZONTAL_FACING);
         return
                 switch (blockFace) {//TODO 后续可以将null改为连锁放置，需要一个接受pos的轻松放置方法
                     case FLOOR ->
                             canPlaceAt(MinecraftClient.getInstance().world, blockPos, Direction.DOWN) ? new Pair<>(
-                                    new BlockHitResult(new Vec3d(0.5, 1, 0.5),
+                                    new RelativeBlockHitResult(new Vec3d(0.5, 1, 0.5),
                                             Direction.UP,
                                             blockPos.down(), false
                                     ), 1) : null;
                     case CEILING ->
                             canPlaceAt(MinecraftClient.getInstance().world, blockPos, Direction.UP) ? new Pair<>(
-                                    new BlockHitResult(new Vec3d(0.5, 0, 0.5),
+                                    new RelativeBlockHitResult(new Vec3d(0.5, 0, 0.5),
                                             Direction.DOWN,
                                             blockPos.up(), false
                                     ), 1) : null;
 
-                    case WALL -> new Pair<>(new BlockHitResult(
+                    case WALL -> new Pair<>(new RelativeBlockHitResult(
                             new Vec3d(0.5, 0.5, 0.5),
                             direction,
                             blockPos,

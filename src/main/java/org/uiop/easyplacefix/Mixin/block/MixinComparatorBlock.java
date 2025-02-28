@@ -13,6 +13,7 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import org.spongepowered.asm.mixin.Mixin;
 import org.uiop.easyplacefix.IBlock;
+import org.uiop.easyplacefix.data.RelativeBlockHitResult;
 
 
 @Mixin(ComparatorBlock.class)
@@ -23,9 +24,9 @@ public abstract class MixinComparatorBlock extends AbstractRedstoneGateBlock imp
     }
 
     @Override
-    public Pair<BlockHitResult, Integer> getHitResult(BlockState blockState, BlockPos blockPos, BlockState worldBlockState) {
+    public Pair<RelativeBlockHitResult, Integer> getHitResult(BlockState blockState, BlockPos blockPos, BlockState worldBlockState) {
         return this.canPlaceAt(blockState, MinecraftClient.getInstance().world, blockPos) ?
-                new Pair<>(new BlockHitResult(new Vec3d(0.5, 0.5, 0.5),
+                new Pair<>(new RelativeBlockHitResult(new Vec3d(0.5, 0.5, 0.5),
                         Direction.UP,
                         blockPos,
                         false),

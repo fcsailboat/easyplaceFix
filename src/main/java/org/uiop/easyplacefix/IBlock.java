@@ -9,6 +9,7 @@ import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
+import org.uiop.easyplacefix.data.RelativeBlockHitResult;
 
 import static org.uiop.easyplacefix.until.PlayerRotationAction.limitYawRotation;
 
@@ -32,8 +33,8 @@ public interface IBlock {
         return null;
     }
 
-    default Pair<BlockHitResult, Integer> getHitResult(BlockState blockState, BlockPos blockPos, BlockState worldBlockState) {
-        return new Pair<>(new BlockHitResult(
+    default Pair<RelativeBlockHitResult, Integer> getHitResult(BlockState blockState, BlockPos blockPos, BlockState worldBlockState) {
+        return new Pair<>(new RelativeBlockHitResult(
                 new Vec3d(0.5, 0.5, 0.5),
                 Direction.UP,
                 blockPos, false

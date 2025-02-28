@@ -19,6 +19,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.uiop.easyplacefix.IBlock;
 import org.uiop.easyplacefix.LookAt;
+import org.uiop.easyplacefix.data.RelativeBlockHitResult;
 
 @Mixin(DoorBlock.class)
 public abstract class MixinDoorBlock implements IBlock {
@@ -44,7 +45,7 @@ public abstract class MixinDoorBlock implements IBlock {
     }
 
     @Override
-    public Pair<BlockHitResult, Integer> getHitResult(BlockState blockState, BlockPos blockPos, BlockState worldBlockState) {
+    public Pair<RelativeBlockHitResult, Integer> getHitResult(BlockState blockState, BlockPos blockPos, BlockState worldBlockState) {
         Direction direction = blockState.get(Properties.HORIZONTAL_FACING);
         DoorHinge doorHinge = blockState.get(Properties.DOOR_HINGE);
         if (blockState.get(Properties.DOUBLE_BLOCK_HALF) == DoubleBlockHalf.UPPER) {
@@ -55,30 +56,30 @@ public abstract class MixinDoorBlock implements IBlock {
                 new Pair<>(switch (direction) {
                     case SOUTH -> {
                         if (doorHinge == DoorHinge.LEFT)
-                            yield new BlockHitResult(new Vec3d(0.8, 1, 0), Direction.UP, blockPos.down(), false);
+                            yield new RelativeBlockHitResult(new Vec3d(0.8, 1, 0), Direction.UP, blockPos.down(), false);
                         else
-                            yield new BlockHitResult(new Vec3d(0.2, 1, 0), Direction.UP, blockPos.down(), false);
+                            yield new RelativeBlockHitResult(new Vec3d(0.2, 1, 0), Direction.UP, blockPos.down(), false);
 
                     }
                     case WEST -> {
                         if (doorHinge == DoorHinge.LEFT)
-                            yield new BlockHitResult(new Vec3d(0, 1, 0.8), Direction.UP, blockPos.down(), false);
+                            yield new RelativeBlockHitResult(new Vec3d(0, 1, 0.8), Direction.UP, blockPos.down(), false);
                         else
-                            yield new BlockHitResult(new Vec3d(0, 1, 0.2), Direction.UP, blockPos.down(), false);
+                            yield new RelativeBlockHitResult(new Vec3d(0, 1, 0.2), Direction.UP, blockPos.down(), false);
 
                     }
                     case EAST -> {
                         if (doorHinge == DoorHinge.LEFT)
-                            yield new BlockHitResult(new Vec3d(0, 1, 0.2), Direction.UP, blockPos.down(), false);
+                            yield new RelativeBlockHitResult(new Vec3d(0, 1, 0.2), Direction.UP, blockPos.down(), false);
                         else
-                            yield new BlockHitResult(new Vec3d(0, 1, 0.8), Direction.UP, blockPos.down(), false);
+                            yield new RelativeBlockHitResult(new Vec3d(0, 1, 0.8), Direction.UP, blockPos.down(), false);
 
                     }
                     default -> {
                         if (doorHinge == DoorHinge.LEFT)
-                            yield new BlockHitResult(new Vec3d(0.2, 0, 0), Direction.UP, blockPos, false);
+                            yield new RelativeBlockHitResult(new Vec3d(0.2, 0, 0), Direction.UP, blockPos, false);
                         else
-                            yield new BlockHitResult(new Vec3d(0.8, 0, 0), Direction.UP, blockPos, false);
+                            yield new RelativeBlockHitResult(new Vec3d(0.8, 0, 0), Direction.UP, blockPos, false);
 
                     }
                 }, blockState.get(Properties.OPEN) && this.blockSetType.canOpenByHand() ? 2 : 1) : null;

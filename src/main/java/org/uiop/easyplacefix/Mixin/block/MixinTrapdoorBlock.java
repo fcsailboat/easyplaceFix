@@ -14,6 +14,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.uiop.easyplacefix.IBlock;
 import org.uiop.easyplacefix.LookAt;
+import org.uiop.easyplacefix.data.RelativeBlockHitResult;
 
 @Mixin(TrapdoorBlock.class)
 public class MixinTrapdoorBlock implements IBlock {
@@ -32,11 +33,11 @@ public class MixinTrapdoorBlock implements IBlock {
     }
 
     @Override
-    public Pair<BlockHitResult, Integer> getHitResult(BlockState blockState, BlockPos blockPos, BlockState worldBlockState) {
+    public Pair<RelativeBlockHitResult, Integer> getHitResult(BlockState blockState, BlockPos blockPos, BlockState worldBlockState) {
 //        Direction direction = blockState.get(Properties.HORIZONTAL_FACING);
         return new Pair<>(switch (blockState.get(Properties.BLOCK_HALF)) {
-            case TOP -> new BlockHitResult(new Vec3d(0.5, 1, 0.5), Direction.DOWN, blockPos, false);
-            case BOTTOM -> new BlockHitResult(new Vec3d(0.5, 0, 0.5), Direction.UP, blockPos, false);
+            case TOP -> new RelativeBlockHitResult(new Vec3d(0.5, 1, 0.5), Direction.DOWN, blockPos, false);
+            case BOTTOM -> new RelativeBlockHitResult(new Vec3d(0.5, 0, 0.5), Direction.UP, blockPos, false);
         }, blockState.get(Properties.OPEN) && this.blockSetType.canOpenByHand() ? 2 : 1);
     }
 }

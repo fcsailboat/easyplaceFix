@@ -16,13 +16,14 @@ import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.uiop.easyplacefix.IBlock;
+import org.uiop.easyplacefix.data.RelativeBlockHitResult;
 
 @Mixin(TurtleEggBlock.class)
 public abstract class MixinTurtleEggBlock implements IBlock {
     @Shadow public abstract void afterBreak(World world, PlayerEntity player, BlockPos pos, BlockState state, @Nullable BlockEntity blockEntity, ItemStack tool);
 
     @Override
-    public Pair<BlockHitResult, Integer> getHitResult(BlockState blockState, BlockPos blockPos, BlockState worldBlockState) {
+    public Pair<RelativeBlockHitResult, Integer> getHitResult(BlockState blockState, BlockPos blockPos, BlockState worldBlockState) {
 
         int count;
         if (worldBlockState.getBlock()==blockState.getBlock()){
@@ -33,7 +34,7 @@ public abstract class MixinTurtleEggBlock implements IBlock {
         }
 
 
-        return new Pair<>(new BlockHitResult(
+        return new Pair<>(new RelativeBlockHitResult(
                 new Vec3d(0.5, 0.5, 0.5),
                 Direction.UP,
                 blockPos, false

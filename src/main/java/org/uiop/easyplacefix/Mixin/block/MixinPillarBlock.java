@@ -10,16 +10,17 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import org.spongepowered.asm.mixin.Mixin;
 import org.uiop.easyplacefix.IBlock;
+import org.uiop.easyplacefix.data.RelativeBlockHitResult;
 
 import static net.minecraft.util.math.Direction.Axis;
 
 @Mixin(PillarBlock.class)
 public class MixinPillarBlock implements IBlock {
     @Override
-    public Pair<BlockHitResult, Integer> getHitResult(BlockState blockState, BlockPos blockPos, BlockState worldBlockState) {
+    public Pair<RelativeBlockHitResult, Integer> getHitResult(BlockState blockState, BlockPos blockPos, BlockState worldBlockState) {
         Axis axis = blockState.get(Properties.AXIS);
 
-        return new Pair<>(new BlockHitResult(
+        return new Pair<>(new RelativeBlockHitResult(
                 new Vec3d(0.5, 0.5, 0.5),
                 switch (axis) {
                     case X -> Direction.EAST;//x

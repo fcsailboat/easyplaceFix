@@ -70,6 +70,7 @@
     "block.MixinWallSignBlock",
     "block.MixinWallSkullBlock",
     "block.MixinWallTorchBlock",
+    "byteBuf.MixinWriteBlockHitResult",
     "packet.MixinCloseScreenS2CPacket",
     "packet.MixinInventoryS2CPacket",
     "packet.MixinOpenScreenS2CPacket",

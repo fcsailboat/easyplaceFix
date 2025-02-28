@@ -2,36 +2,29 @@ package org.uiop.easyplacefix.until;
 
 import fi.dy.masa.litematica.config.Configs;
 import fi.dy.masa.litematica.data.DataManager;
-import fi.dy.masa.litematica.materials.MaterialCache;
 import fi.dy.masa.litematica.schematic.placement.SchematicPlacementManager;
 import fi.dy.masa.litematica.util.EntityUtils;
-import fi.dy.masa.litematica.util.InventoryUtils;
 import fi.dy.masa.litematica.util.RayTraceUtils;
 import fi.dy.masa.litematica.world.SchematicWorldHandler;
-import fi.dy.masa.malilib.util.LayerRange;
 import io.netty.channel.Channel;
-import net.fabricmc.fabric.api.client.networking.v1.C2SConfigurationChannelEvents;
 import net.minecraft.block.*;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerInteractionManager;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.ItemUsageContext;
-import net.minecraft.network.packet.c2s.play.PlayerInteractBlockC2SPacket;
 import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
-import net.minecraft.state.property.Properties;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Pair;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.uiop.easyplacefix.IBlock;
 import org.uiop.easyplacefix.IClientPlayerInteractionManager;
 import org.uiop.easyplacefix.Mixin.AccessorMixin.ClientConnectionAccessor;
+import org.uiop.easyplacefix.data.RelativeBlockHitResult;
 import org.uiop.easyplacefix.data.LoosenModeData;
 
 import java.util.HashSet;
@@ -122,15 +115,15 @@ public class doEasyPlace {//TODO 轻松放置重写计划
     }
 
     public static ActionResult doEasyPlace2(MinecraftClient mc, RayTraceUtils.RayTraceWrapper traceWrapper) {
-        BlockHitResult trace = traceWrapper.getBlockHitResult();
+        BlockHitResult trace = traceWrapper.getBlockHitResult();//这是投影获取玩家指向的方法
         World schematicWorld = SchematicWorldHandler.getSchematicWorld();
-        BlockPos pos = trace.getBlockPos();
+        BlockPos pos = trace.getBlockPos();//这是投影获取玩家指向方块坐标的方法
         if (concurrentSet.contains(pos)) return ActionResult.FAIL;
         BlockState stateClient = mc.world.getBlockState(pos);//获取本地方块状态
         BlockState stateSchematic = schematicWorld.getBlockState(pos);
         ActionResult isTermination = ((IBlock) stateClient.getBlock()).isWorldTermination(pos, stateSchematic, stateClient);//是否终止
         if (isTermination != null) return isTermination;
-
+        //是否终止操作，分为两次判断⬆⬇
         isTermination = ((IBlock) stateSchematic.getBlock()).isSchemaTermination(pos, stateSchematic, stateClient);//是否终止
         if (isTermination != null) return isTermination;
 
@@ -161,15 +154,14 @@ public class doEasyPlace {//TODO 轻松放置重写计划
 
 
                 ClientPlayerInteractionManager interactionManager = MinecraftClient.getInstance().interactionManager;
-                ItemStack itemStack2 = searchItem(mc, stack);
-               itemStack2 = loosenMode(itemStack2, stateSchematic);
 
-                if (itemStack2 == null) {
+                ItemStack itemStack2 = searchItem(mc, stack);
+                itemStack2 = loosenMode(itemStack2, stateSchematic);
+                if (itemStack2 == null) {//没有找到对应物品即为无法放置
                     return ActionResult.FAIL;
                 }
-                Block block = stateSchematic.getBlock();
 
-
+                Block block = stateSchematic.getBlock();//获取要操作的block实例
                 Pair<BlockHitResult, Integer> blockHitResultIntegerPair =
                         ((IBlock) block).getHitResult(
                                 stateSchematic,
@@ -178,44 +170,19 @@ public class doEasyPlace {//TODO 轻松放置重写计划
                         );
 
                 if (blockHitResultIntegerPair == null) return ActionResult.FAIL;
-
-                BlockHitResult blockHitResult = blockHitResultIntegerPair.getLeft();//获取操作数据(blockHitResult)
-                Vec3d vec3d = new Vec3d(
-                        blockHitResult.getBlockPos().getX() + blockHitResult.getPos().x,
-                        blockHitResult.getBlockPos().getY() + blockHitResult.getPos().y,
-                        blockHitResult.getBlockPos().getZ() + blockHitResult.getPos().z
-                );
-                BlockHitResult offsetBlockhitResult = new BlockHitResult(
-                        vec3d,
-                        blockHitResult.getSide(),
-                        blockHitResult.getBlockPos(),
-                        false
-                );
+                RelativeBlockHitResult offsetBlockHitResult = (RelativeBlockHitResult) blockHitResultIntegerPair.getLeft();//获取操作数据(blockHitResult)
                 if (stateSchematic.getBlock() instanceof PistonBlock) {//TODO 了解interactBlock内部工作原理，改进这部分代码
                     pistonBlockState = stateSchematic;
                     modifyBoolean = true;
                 }
                 ItemStack finalStack = itemStack2;
                 concurrentSet.add(pos);
-
                 scheduler.schedule(() -> {
                     AtomicReference<Hand> hand = new AtomicReference<>();
                     try {
                         Channel channel = ((ClientConnectionAccessor) mc.getNetworkHandler().getConnection()).getChannel();
-//
-//// 发送朝向数据包
-//                        channel.writeAndFlush(new PlayerMoveC2SPacket.LookAndOnGround(yawLock, pitchLock, true))
-//                                .addListener(future -> {
-//                                    // 延迟后发送方块交互包
-//                                    channel.eventLoop().schedule(() -> {
-//                                        PlayerInteractBlockC2SPacket packet = new PlayerInteractBlockC2SPacket(
-//                                                hand, offsetBlockhitResult, 0
-//                                        );
-//                                        channel.writeAndFlush(packet);
-//                                    }, ((IBlock) block).sleepTime(stateSchematic), TimeUnit.MILLISECONDS);
-//                                });
+
                         mc.execute(()->{
-//                            InventoryUtils.schematicWorldPickBlock(finalStack, pos, schematicWorld, mc);
                             pickItem(mc,finalStack);
                             hand.set(EntityUtils.getUsedHandForItem(mc.player, finalStack));
                         });
@@ -224,13 +191,6 @@ public class doEasyPlace {//TODO 轻松放置重写计划
                             yawLock = lookAtPair.getLeft();
                             pitchLock = lookAtPair.getRight();
                             notChangPlayerLook = true;
-//                            channel.writeAndFlush( new PlayerMoveC2SPacket.LookAndOnGround(
-//                                    yawLock,
-//                                    pitchLock,
-//                                    MinecraftClient.getInstance().player.isOnGround(),
-//                                    mc.player.horizontalCollision//不知道干嘛的参数
-//
-//                            ));
                             mc.execute(() -> PlayerRotationAction.setServerBoundPlayerRotation(yawLock, pitchLock, mc.player.horizontalCollision));
                         }
                         long delay = ((IBlock) block).sleepTime(stateSchematic);
@@ -239,16 +199,13 @@ public class doEasyPlace {//TODO 轻松放置重写计划
                         } catch (InterruptedException e) {
                             throw new RuntimeException(e);
                         }
-//                        channel.writeAndFlush( new PlayerInteractBlockC2SPacket(
-//                                                hand.get(), offsetBlockhitResult, 0
-//                                        ));
                         mc.execute(() -> {
                             ((IClientPlayerInteractionManager) interactionManager).syn();
                             ((IBlock) block).firstAction();
                             interactionManager.interactBlock(
                                     mc.player,
                                     hand.get(),
-                                    offsetBlockhitResult
+                                    offsetBlockHitResult
                             );
                             mc.player.swingHand(hand.get());
                             int i = 1;
@@ -266,10 +223,6 @@ public class doEasyPlace {//TODO 轻松放置重写计划
                             ((IBlock) block).afterAction();
                             ((IBlock) block).BlockAction(stateSchematic, trace);
                             notChangPlayerLook = false;
-//                            PlayerRotationAction.setServerBoundPlayerRotation(
-//                                    mc.player.getYaw(),
-//                                    mc.player.getPitch(),
-//                                    mc.player.horizontalCollision);
                             channel.writeAndFlush(new PlayerMoveC2SPacket.LookAndOnGround(
                                     mc.player.getYaw(),
                                             mc.player.getPitch(),

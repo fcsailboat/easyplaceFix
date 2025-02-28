@@ -17,6 +17,7 @@ import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.uiop.easyplacefix.IBlock;
+import org.uiop.easyplacefix.data.RelativeBlockHitResult;
 
 @Mixin(ChestBlock.class)
 public class MixinChestBlock implements IBlock {
@@ -42,14 +43,14 @@ public class MixinChestBlock implements IBlock {
     }
 
     @Override
-    public Pair<BlockHitResult, Integer> getHitResult(BlockState blockState, BlockPos blockPos, BlockState worldBlockState) {
+    public Pair<RelativeBlockHitResult, Integer> getHitResult(BlockState blockState, BlockPos blockPos, BlockState worldBlockState) {
 
         ChestType chestType = blockState.get(Properties.CHEST_TYPE);
         if (chestType == ChestType.SINGLE) {
             MinecraftClient.getInstance().getNetworkHandler().sendPacket(new ClientCommandC2SPacket(
                     MinecraftClient.getInstance().player, ClientCommandC2SPacket.Mode.PRESS_SHIFT_KEY
             ));
-            return new Pair<>(new BlockHitResult(
+            return new Pair<>(new RelativeBlockHitResult(
                     new Vec3d(0.5, 0.5, 0.5),
                     Direction.UP,
                     blockPos, false
@@ -64,7 +65,7 @@ public class MixinChestBlock implements IBlock {
         }
         BlockPos offset = blockPos.offset(blockFace.getOpposite());
 
-        return new Pair<>(new BlockHitResult(
+        return new Pair<>(new RelativeBlockHitResult(
                 switch (blockFace) {
                     case EAST -> new Vec3d(0.9, 0.5, 0.5);
                     case SOUTH -> new Vec3d(0.5, 0.5, 0.9);

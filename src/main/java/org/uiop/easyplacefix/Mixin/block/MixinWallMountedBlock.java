@@ -15,6 +15,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.uiop.easyplacefix.IBlock;
 import org.uiop.easyplacefix.LookAt;
+import org.uiop.easyplacefix.data.RelativeBlockHitResult;
 
 @Mixin(WallMountedBlock.class)//Lever,button
 public abstract class MixinWallMountedBlock implements IBlock {
@@ -32,24 +33,24 @@ public abstract class MixinWallMountedBlock implements IBlock {
     }
 
     @Override
-    public Pair<BlockHitResult, Integer> getHitResult(BlockState blockState, BlockPos blockPos, BlockState worldBlockState) {
+    public Pair<RelativeBlockHitResult, Integer> getHitResult(BlockState blockState, BlockPos blockPos, BlockState worldBlockState) {
         BlockFace blockFace = blockState.get(Properties.BLOCK_FACE);
         Direction direction = blockState.get(Properties.HORIZONTAL_FACING);
         return canPlaceAt(blockState, MinecraftClient.getInstance().world, blockPos) ?
                 switch (blockFace) {//TODO 后续可以将null改为连锁放置，需要一个接受pos的轻松放置方法
                     case FLOOR -> new Pair<>(
-                            new BlockHitResult(new Vec3d(0.5, 1, 0.5),
+                            new RelativeBlockHitResult(new Vec3d(0.5, 1, 0.5),
                                     Direction.UP,
                                     blockPos.down(), false
                             ), 1);
                     case CEILING -> new Pair<>(
-                            new BlockHitResult(new Vec3d(0.5, 0, 0.5),
+                            new RelativeBlockHitResult(new Vec3d(0.5, 0, 0.5),
                                     Direction.DOWN,
                                     blockPos.up(), false
                             ), 1);
 
                     case WALL -> new Pair<>(
-                            new BlockHitResult(
+                            new RelativeBlockHitResult(
                                     switch (direction) {
                                         case EAST -> new Vec3d(1, 0.5, 0.5);
                                         case SOUTH -> new Vec3d(0.5, 0.5, 1);

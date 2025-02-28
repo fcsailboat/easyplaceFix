@@ -15,6 +15,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.uiop.easyplacefix.IBlock;
 import org.uiop.easyplacefix.LookAt;
+import org.uiop.easyplacefix.data.RelativeBlockHitResult;
 
 @Mixin(BellBlock.class)
 public abstract class MixinBellBlock implements IBlock {
@@ -35,21 +36,21 @@ public abstract class MixinBellBlock implements IBlock {
     }
 
     @Override
-    public Pair<BlockHitResult, Integer> getHitResult(BlockState blockState, BlockPos blockPos, BlockState worldBlockState) {
+    public Pair<RelativeBlockHitResult, Integer> getHitResult(BlockState blockState, BlockPos blockPos, BlockState worldBlockState) {
         Direction facing = blockState.get(Properties.HORIZONTAL_FACING);
         return this.canPlaceAt(blockState, MinecraftClient.getInstance().world, blockPos) ?
                 new Pair<>(switch (blockState.get(Properties.ATTACHMENT)) {
-                    case CEILING -> new BlockHitResult(
+                    case CEILING -> new RelativeBlockHitResult(
                             new Vec3d(0.5, 0, 0.5),
                             Direction.DOWN,
                             blockPos.up(), false
                     );
-                    case FLOOR -> new BlockHitResult(
+                    case FLOOR -> new RelativeBlockHitResult(
                             new Vec3d(0.5, 1, 0.5),
                             Direction.UP,
                             blockPos.down(), false
                     );
-                    case SINGLE_WALL, DOUBLE_WALL -> new BlockHitResult(
+                    case SINGLE_WALL, DOUBLE_WALL -> new RelativeBlockHitResult(
                             switch (facing) {
                                 case EAST -> new Vec3d(1, 0.5, 0.5);
                                 case SOUTH -> new Vec3d(0.5, 0.5, 1);

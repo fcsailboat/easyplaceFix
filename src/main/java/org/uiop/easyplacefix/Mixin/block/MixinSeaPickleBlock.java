@@ -12,6 +12,7 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import org.spongepowered.asm.mixin.Mixin;
 import org.uiop.easyplacefix.IBlock;
+import org.uiop.easyplacefix.data.RelativeBlockHitResult;
 
 @Mixin(SeaPickleBlock.class)
 public abstract class MixinSeaPickleBlock extends PlantBlock implements IBlock {
@@ -20,7 +21,7 @@ public abstract class MixinSeaPickleBlock extends PlantBlock implements IBlock {
     }
 
     @Override
-    public Pair<BlockHitResult, Integer> getHitResult(BlockState blockState, BlockPos blockPos, BlockState worldBlockState) {
+    public Pair<RelativeBlockHitResult, Integer> getHitResult(BlockState blockState, BlockPos blockPos, BlockState worldBlockState) {
         int count;
         if (worldBlockState.getBlock()==blockState.getBlock()){
             count = blockState.get(Properties.PICKLES)-worldBlockState.get(Properties.PICKLES);
@@ -31,7 +32,7 @@ public abstract class MixinSeaPickleBlock extends PlantBlock implements IBlock {
 
 
         return canPlaceAt(blockState, MinecraftClient.getInstance().world, blockPos) ? new Pair<>(
-                new BlockHitResult(
+                new RelativeBlockHitResult(
                         new Vec3d(0.5, 0.5, 0.5),
                         Direction.UP,
                         blockPos, false

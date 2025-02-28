@@ -12,6 +12,7 @@ import net.minecraft.world.WorldView;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.uiop.easyplacefix.IBlock;
+import org.uiop.easyplacefix.data.RelativeBlockHitResult;
 
 @Mixin(PlantBlock.class)
 public abstract class MixinPlantBlock implements IBlock {
@@ -19,9 +20,9 @@ public abstract class MixinPlantBlock implements IBlock {
     protected abstract boolean canPlaceAt(BlockState state, WorldView world, BlockPos pos);
 
     @Override
-    public Pair<BlockHitResult, Integer> getHitResult(BlockState blockState, BlockPos blockPos, BlockState worldBlockState) {
+    public Pair<RelativeBlockHitResult, Integer> getHitResult(BlockState blockState, BlockPos blockPos, BlockState worldBlockState) {
         return canPlaceAt(blockState, MinecraftClient.getInstance().world, blockPos) ? new Pair<>(
-                new BlockHitResult(
+                new RelativeBlockHitResult(
                         new Vec3d(0.5, 0.5, 0.5),
                         Direction.UP,
                         blockPos, false

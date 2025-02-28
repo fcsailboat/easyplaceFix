@@ -11,6 +11,7 @@ import net.minecraft.util.math.Vec3d;
 import org.spongepowered.asm.mixin.Mixin;
 import org.uiop.easyplacefix.IBlock;
 import org.uiop.easyplacefix.LookAt;
+import org.uiop.easyplacefix.data.RelativeBlockHitResult;
 
 @Mixin(StairsBlock.class)
 public class MixinStairsBlock implements IBlock {
@@ -26,18 +27,18 @@ public class MixinStairsBlock implements IBlock {
     }
 
     @Override
-    public Pair<BlockHitResult, Integer> getHitResult(BlockState blockState, BlockPos blockPos, BlockState worldBlockState) {
+    public Pair<RelativeBlockHitResult, Integer> getHitResult(BlockState blockState, BlockPos blockPos, BlockState worldBlockState) {
 
         BlockHalf blockHalf = blockState.get(Properties.BLOCK_HALF);
         return switch (blockHalf) {
             case TOP -> new Pair<>(
-                    new BlockHitResult(
+                    new RelativeBlockHitResult(
                             new Vec3d(0.5, 1, 0.5),
                             blockState.get(Properties.HORIZONTAL_FACING),
                             blockPos, false
                     ), 1);
             case BOTTOM -> new Pair<>(
-                    new BlockHitResult(
+                    new RelativeBlockHitResult(
                             new Vec3d(0.5, 0, 0.5),
                             blockState.get(Properties.HORIZONTAL_FACING),
                             blockPos, false
