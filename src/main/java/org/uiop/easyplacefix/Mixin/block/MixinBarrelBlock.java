@@ -16,13 +16,9 @@ import static org.uiop.easyplacefix.config.easyPlacefixConfig.Allow_Interaction;
 @Mixin(BarrelBlock.class)
 public class MixinBarrelBlock implements IBlock {
     @Override
-    public long sleepTime(BlockState blockState) {
+    public boolean HasSleepTime(BlockState blockState) {
         Direction facing = blockState.get(Properties.FACING);
-        if (facing== Direction.UP||facing==Direction.DOWN){
-            return 0;
-        }else {
-            return 50_000_000;
-        }
+        return facing != Direction.UP && facing != Direction.DOWN;
     }
     @Override
     public ActionResult isWorldTermination(BlockPos pos, BlockState blockState, BlockState worldBlockstate) {

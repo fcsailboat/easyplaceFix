@@ -1,8 +1,8 @@
-package org.uiop.easyplacefix.Mixin.block;
+package org.uiop.easyplacefix.Mixin.block.signBlock;
 
 import fi.dy.masa.litematica.world.SchematicWorldHandler;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.SignBlock;
+import net.minecraft.block.WallHangingSignBlock;
 import net.minecraft.block.entity.SignBlockEntity;
 import net.minecraft.block.entity.SignText;
 import net.minecraft.client.MinecraftClient;
@@ -14,7 +14,6 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.Pair;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.WorldView;
 import org.spongepowered.asm.mixin.Mixin;
@@ -24,11 +23,10 @@ import org.uiop.easyplacefix.LookAt;
 import org.uiop.easyplacefix.data.RelativeBlockHitResult;
 import org.uiop.easyplacefix.until.PlayerBlockAction;
 
-@Mixin(SignBlock.class)
-public abstract class MixinSignBlock implements IBlock {
+@Mixin(WallHangingSignBlock.class)
+public abstract class MixinWallHangingSignBlock implements IBlock {
     @Shadow
-    protected abstract boolean canPlaceAt(BlockState state, WorldView world, BlockPos pos);
-
+    public abstract boolean canAttachAt(BlockState state, WorldView world, BlockPos pos);
     @Override
     public void BlockAction(BlockState blockState, BlockHitResult blockHitResult) {
         ClientPlayNetworkHandler clientPlayNetworkHandler = MinecraftClient.getInstance().getNetworkHandler();
@@ -79,31 +77,37 @@ public abstract class MixinSignBlock implements IBlock {
             }
         });
     }
-
     @Override
-    public Pair<Float, Float> getLimitYawAndPitch(BlockState blockState) {
-        Pair<LookAt, LookAt> lookAtPair = getYawAndPitch(blockState);
-        return new Pair<>(
-                lookAtPair.getLeft().Value(),
-                lookAtPair.getRight().Value()
-        );
+    public boolean HasSleepTime(BlockState blockState) {
+        return true;
     }
 
-    @Override
-    public Pair<LookAt, LookAt> getYawAndPitch(BlockState blockState) {
-        return new Pair<>(LookAt.Fractionize.customize(
-                ((blockState.get(Properties.ROTATION) * 22.5F) + 180) % 360
-        ), LookAt.GetNow.NowPitch());
-    }
+    //TODO 这里可以不用朝向数据包，但是我没看懂她是怎么判断周围有没有可以依附的方块的，暂时先发送朝向数据包
+//这里要发送朝向数据包，因为朝向不同文字的面也不同
+@Override
+public Pair<LookAt, LookAt> getYawAndPitch(BlockState blockState) {
+    return switch (blockState.get(Properties.HORIZONTAL_FACING)) {
+        case SOUTH -> new Pair<>(LookAt.North, LookAt.GetNow);
+        case WEST -> new Pair<>(LookAt.East, LookAt.GetNow);
+        case EAST -> new Pair<>(LookAt.West, LookAt.GetNow);
+        default -> new Pair<>(LookAt.South, LookAt.GetNow);
+    };
+}
+//    @Override
+//    public Pair<LookAt, LookAt> getYawAndPitch(BlockState blockState) {
+//        switch (blockState.get(Properties.FACING)){
+//            case WEST ->this.canAttachAt()
+//        }
+//    }
 
     @Override
     public Pair<RelativeBlockHitResult, Integer> getHitResult(BlockState blockState, BlockPos blockPos, BlockState worldBlockState) {
-        return this.canPlaceAt(blockState, MinecraftClient.getInstance().world, blockPos) ? new Pair<>(
-                new RelativeBlockHitResult(
-                        new Vec3d(0.5, 1, 0.5),
-                        Direction.UP,
-                        blockPos.down(),
-                        false
-                ), 1) : null;
+        return canAttachAt(blockState, MinecraftClient.getInstance().world, blockPos) ?
+                new Pair<>(
+                        new RelativeBlockHitResult(new Vec3d(0.5, 0.5, 0.5),
+                                blockState.get(Properties.HORIZONTAL_FACING).rotateYClockwise(),
+                                blockPos,
+                                false
+                        ), 1) : null;
     }
 }

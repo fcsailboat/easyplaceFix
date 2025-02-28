@@ -12,13 +12,9 @@ import org.uiop.easyplacefix.LookAt;
 @Mixin(PistonBlock.class)
 public class MixinPiston implements IBlock {
     @Override
-    public long sleepTime(BlockState blockState) {
+    public boolean HasSleepTime(BlockState blockState) {
         Direction facing = blockState.get(Properties.FACING);
-        if (facing== Direction.UP||facing==Direction.DOWN){
-            return 0;
-        }else {
-            return 50_000_000;
-        }
+        return facing != Direction.UP && facing != Direction.DOWN;
     }
     @Override
     public Pair<LookAt, LookAt> getYawAndPitch(BlockState blockState) {

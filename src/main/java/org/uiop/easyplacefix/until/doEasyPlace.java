@@ -162,7 +162,7 @@ public class doEasyPlace {//TODO 轻松放置重写计划
                 }
 
                 Block block = stateSchematic.getBlock();//获取要操作的block实例
-                Pair<BlockHitResult, Integer> blockHitResultIntegerPair =
+                Pair<RelativeBlockHitResult, Integer> blockHitResultIntegerPair =
                         ((IBlock) block).getHitResult(
                                 stateSchematic,
                                 trace.getBlockPos(),
@@ -170,7 +170,7 @@ public class doEasyPlace {//TODO 轻松放置重写计划
                         );
 
                 if (blockHitResultIntegerPair == null) return ActionResult.FAIL;
-                RelativeBlockHitResult offsetBlockHitResult = (RelativeBlockHitResult) blockHitResultIntegerPair.getLeft();//获取操作数据(blockHitResult)
+                RelativeBlockHitResult offsetBlockHitResult = blockHitResultIntegerPair.getLeft();//获取操作数据(blockHitResult)
                 if (stateSchematic.getBlock() instanceof PistonBlock) {//TODO 了解interactBlock内部工作原理，改进这部分代码
                     pistonBlockState = stateSchematic;
                     modifyBoolean = true;
@@ -180,58 +180,61 @@ public class doEasyPlace {//TODO 轻松放置重写计划
                 scheduler.schedule(() -> {
                     AtomicReference<Hand> hand = new AtomicReference<>();
                     try {
-                        Channel channel = ((ClientConnectionAccessor) mc.getNetworkHandler().getConnection()).getChannel();
-
-                        mc.execute(()->{
-                            pickItem(mc,finalStack);
-                            hand.set(EntityUtils.getUsedHandForItem(mc.player, finalStack));
-                        });
                         Pair<Float, Float> lookAtPair = ((IBlock) block).getLimitYawAndPitch(stateSchematic);
-                        if (lookAtPair != null) {
-                            yawLock = lookAtPair.getLeft();
-                            pitchLock = lookAtPair.getRight();
-                            notChangPlayerLook = true;
-                            mc.execute(() -> PlayerRotationAction.setServerBoundPlayerRotation(yawLock, pitchLock, mc.player.horizontalCollision));
-                        }
-                        long delay = ((IBlock) block).sleepTime(stateSchematic);
-                        try {
-                            TimeUnit.NANOSECONDS.sleep(delay);
-                        } catch (InterruptedException e) {
-                            throw new RuntimeException(e);
-                        }
-                        mc.execute(() -> {
-                            ((IClientPlayerInteractionManager) interactionManager).syn();
-                            ((IBlock) block).firstAction();
-                            interactionManager.interactBlock(
-                                    mc.player,
-                                    hand.get(),
-                                    offsetBlockHitResult
-                            );
-                            mc.player.swingHand(hand.get());
-                            int i = 1;
-                            while (i < blockHitResultIntegerPair.getRight()) {
 
+                        pickItem(mc,finalStack);
+                        hand.set(EntityUtils.getUsedHandForItem(mc.player, finalStack));
+                        boolean wantActionAck = ((IBlock) block).HasSleepTime(stateSchematic);
+                        if (wantActionAck){
+                          yawLock = lookAtPair.getLeft();
+                          pitchLock = lookAtPair.getRight();
+                          notChangPlayerLook = true;
+                          mc.execute(() ->
+                                  PlayerRotationAction.setServerBoundPlayerRotation(
+                                          yawLock, pitchLock, mc.player.horizontalCollision)
+                          );
+
+
+
+
+
+
+                        }else{
+                            mc.execute(() -> {
+                                if (lookAtPair != null) {
+                                    PlayerRotationAction.setServerBoundPlayerRotation(
+                                            lookAtPair.getLeft(),
+                                            lookAtPair.getRight(),
+                                            mc.player.horizontalCollision
+                                    );
+                                }
+                                ((IClientPlayerInteractionManager) interactionManager).syn();
+                                ((IBlock) block).firstAction();
                                 interactionManager.interactBlock(
                                         mc.player,
                                         hand.get(),
-                                        trace
+                                        offsetBlockHitResult
                                 );
                                 mc.player.swingHand(hand.get());
+                                int i = 1;
+                                while (i < blockHitResultIntegerPair.getRight()) {
 
-                                i++;
-                            }
-                            ((IBlock) block).afterAction();
-                            ((IBlock) block).BlockAction(stateSchematic, trace);
-                            notChangPlayerLook = false;
-                            channel.writeAndFlush(new PlayerMoveC2SPacket.LookAndOnGround(
-                                    mc.player.getYaw(),
-                                            mc.player.getPitch(),
-                                            mc.player.isOnGround(),
-                                            mc.player.horizontalCollision))
-                                .addListener(future -> {
-                                    concurrentSet.remove(pos);
-                                });
-                        });
+                                    interactionManager.interactBlock(
+                                            mc.player,
+                                            hand.get(),
+                                            trace
+                                    );
+                                    mc.player.swingHand(hand.get());
+
+                                    i++;
+                                }
+                                ((IBlock) block).afterAction();
+                                ((IBlock) block).BlockAction(stateSchematic, trace);
+                                notChangPlayerLook = false;
+                                concurrentSet.remove(pos);
+                            });
+                        }
+
                     }finally {
                         if (notChangPlayerLook){
                             notChangPlayerLook = false;

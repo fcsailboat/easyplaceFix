@@ -31,14 +31,10 @@ import static org.uiop.easyplacefix.EasyPlaceFix.crafterSlot;
 @Mixin(value = CrafterBlock.class)
 public class MixinCrafterBlock implements IBlock {
     @Override
-    public long sleepTime(BlockState blockState) {
+    public boolean HasSleepTime(BlockState blockState) {
         Orientation orientation = blockState.get(Properties.ORIENTATION);
         Direction facing = orientation.getFacing();//决定其是垂直还是水平(水平情况附带朝向)
-        if (facing == Direction.UP || facing == Direction.DOWN) {
-            return 0;
-        } else {
-            return 50_000_000;
-        }
+        return facing != Direction.UP && facing != Direction.DOWN;
     }
 
     @Override

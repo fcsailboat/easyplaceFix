@@ -1,7 +1,6 @@
 package org.uiop.easyplacefix;
 
 import net.minecraft.block.BlockState;
-import net.minecraft.block.DeadCoralFanBlock;
 import net.minecraft.item.Item;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Pair;
@@ -17,7 +16,7 @@ public interface IBlock {
     default boolean hasYawPitch() {
         return false;
     }
-    default long sleepTime(BlockState blockState){return 0;}
+    default boolean HasSleepTime(BlockState blockState){return false;}
     default Pair<LookAt, LookAt> getYawAndPitch(BlockState blockState) {
         return null;
     }

@@ -6,7 +6,6 @@ import net.minecraft.block.enums.BlockFace;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.state.property.Properties;
 import net.minecraft.util.Pair;
-import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
@@ -20,10 +19,8 @@ import static net.minecraft.block.WallMountedBlock.canPlaceAt;
 @Mixin(GrindstoneBlock.class)
 public class MixinGrindstoneBlock implements IBlock {
     @Override
-    public long sleepTime(BlockState blockState) {
-        if (blockState.get(Properties.BLOCK_FACE) == BlockFace.WALL) return 50_000_000;
-
-        return 0;
+    public boolean HasSleepTime(BlockState blockState) {
+        return blockState.get(Properties.BLOCK_FACE) == BlockFace.WALL;
 
     }
 
