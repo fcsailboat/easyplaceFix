@@ -6,12 +6,13 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.uiop.easyplacefix.until.PlayerBlockAction;
 
 @Mixin(PlayerActionResponseS2CPacket.class)
 public class MixinPlayerActionResponseS2CPacket {
 
     @Inject(method = "apply(Lnet/minecraft/network/listener/ClientPlayPacketListener;)V", at = @At("HEAD"))
     public void apply(ClientPlayPacketListener clientPlayPacketListener, CallbackInfo ci) {
-
+        PlayerBlockAction.useItemOnAction.run();
     }
 }

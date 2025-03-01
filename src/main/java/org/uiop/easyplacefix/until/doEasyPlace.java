@@ -13,6 +13,7 @@ import net.minecraft.client.network.ClientPlayerInteractionManager;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
+import net.minecraft.network.packet.c2s.play.PlayerActionC2SPacket;
 import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
@@ -20,16 +21,17 @@ import net.minecraft.util.Pair;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
 import org.uiop.easyplacefix.IBlock;
 import org.uiop.easyplacefix.IClientPlayerInteractionManager;
 import org.uiop.easyplacefix.Mixin.AccessorMixin.ClientConnectionAccessor;
-import org.uiop.easyplacefix.data.RelativeBlockHitResult;
 import org.uiop.easyplacefix.data.LoosenModeData;
+import org.uiop.easyplacefix.data.RelativeBlockHitResult;
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
 
@@ -84,30 +86,30 @@ public class doEasyPlace {//TODO 轻松放置重写计划
 
     public static ItemStack loosenMode(ItemStack stack, BlockState stateSchema) {
         if (stack == null && LOOSEN_MODE.getBooleanValue()) {
-                if (!EntityUtils.isCreativeMode(MinecraftClient.getInstance().player)) {
-                    Block ReplacedBlock = stateSchema.getBlock();//将被替换的item对应的方块
-                    Predicate<Block> predicate = null;
-                    if (ReplacedBlock instanceof WallBlock)   //墙类
-                        predicate = block -> block instanceof WallBlock;
-                    else if (ReplacedBlock instanceof FenceGateBlock)//栅栏门
-                        predicate = block -> block instanceof FenceGateBlock;
-                    else if (ReplacedBlock instanceof TrapdoorBlock)//活板门
-                        predicate = block -> block instanceof TrapdoorBlock;
-                    else if (ReplacedBlock instanceof CoralFanBlock)//珊瑚扇
-                        predicate = block -> block instanceof CoralFanBlock;
-                    ItemStack stack1 = null;
-                    if (predicate != null) {
-                        PlayerInventory playerInventory = MinecraftClient.getInstance().player.getInventory();
-                        stack1 = findBlockInInventory(playerInventory, predicate);
-                    }
-                    if (stack1 == null) {
-                        HashSet<ItemStack> itemStackHashSet = LoosenModeData.loadFromFile();
-                        return loosenMode2(itemStackHashSet);
-
-                    }
-                    return stack1;
+            if (!EntityUtils.isCreativeMode(MinecraftClient.getInstance().player)) {
+                Block ReplacedBlock = stateSchema.getBlock();//将被替换的item对应的方块
+                Predicate<Block> predicate = null;
+                if (ReplacedBlock instanceof WallBlock)   //墙类
+                    predicate = block -> block instanceof WallBlock;
+                else if (ReplacedBlock instanceof FenceGateBlock)//栅栏门
+                    predicate = block -> block instanceof FenceGateBlock;
+                else if (ReplacedBlock instanceof TrapdoorBlock)//活板门
+                    predicate = block -> block instanceof TrapdoorBlock;
+                else if (ReplacedBlock instanceof CoralFanBlock)//珊瑚扇
+                    predicate = block -> block instanceof CoralFanBlock;
+                ItemStack stack1 = null;
+                if (predicate != null) {
+                    PlayerInventory playerInventory = MinecraftClient.getInstance().player.getInventory();
+                    stack1 = findBlockInInventory(playerInventory, predicate);
+                }
+                if (stack1 == null) {
+                    HashSet<ItemStack> itemStackHashSet = LoosenModeData.loadFromFile();
+                    return loosenMode2(itemStackHashSet);
 
                 }
+                return stack1;
+
+            }
 
 
         }
@@ -177,82 +179,113 @@ public class doEasyPlace {//TODO 轻松放置重写计划
                 }
                 ItemStack finalStack = itemStack2;
                 concurrentSet.add(pos);
-                scheduler.schedule(() -> {
-                    AtomicReference<Hand> hand = new AtomicReference<>();
-                    try {
-                        Pair<Float, Float> lookAtPair = ((IBlock) block).getLimitYawAndPitch(stateSchematic);
 
-                        pickItem(mc,finalStack);
-                        hand.set(EntityUtils.getUsedHandForItem(mc.player, finalStack));
-                        boolean wantActionAck = ((IBlock) block).HasSleepTime(stateSchematic);
-                        if (wantActionAck){
-                          yawLock = lookAtPair.getLeft();
-                          pitchLock = lookAtPair.getRight();
-                          notChangPlayerLook = true;
-                          mc.execute(() ->
-                                  PlayerRotationAction.setServerBoundPlayerRotation(
-                                          yawLock, pitchLock, mc.player.horizontalCollision)
-                          );
+                AtomicReference<Hand> hand = new AtomicReference<>();
 
-
-
-
-
-
-                        }else{
-                            mc.execute(() -> {
-                                if (lookAtPair != null) {
-                                    PlayerRotationAction.setServerBoundPlayerRotation(
-                                            lookAtPair.getLeft(),
-                                            lookAtPair.getRight(),
-                                            mc.player.horizontalCollision
-                                    );
-                                }
-                                ((IClientPlayerInteractionManager) interactionManager).syn();
-                                ((IBlock) block).firstAction();
-                                interactionManager.interactBlock(
-                                        mc.player,
-                                        hand.get(),
-                                        offsetBlockHitResult
-                                );
-                                mc.player.swingHand(hand.get());
-                                int i = 1;
-                                while (i < blockHitResultIntegerPair.getRight()) {
-
+                Channel channel = ((ClientConnectionAccessor) MinecraftClient.getInstance().getNetworkHandler().getConnection()).getChannel();
+                Pair<Float, Float> lookAtPair = ((IBlock) block).getLimitYawAndPitch(stateSchematic);
+                boolean wantActionAck = ((IBlock) block).HasSleepTime(stateSchematic);
+                if (wantActionAck) {
+                    CountDownLatch latch = new CountDownLatch(1); // 创建一个CountDownLatch，初始值为1
+                    scheduler.execute(() -> {
+                        Runnable runnable = (() ->
+                                mc.execute(() -> {
+                                    pickItem(mc, finalStack);
+                                    hand.set(EntityUtils.getUsedHandForItem(mc.player, finalStack));
+                                    ((IClientPlayerInteractionManager) interactionManager).syn();
+                                    ((IBlock) block).firstAction();
                                     interactionManager.interactBlock(
                                             mc.player,
                                             hand.get(),
-                                            trace
+                                            offsetBlockHitResult
                                     );
+                                    notChangPlayerLook = false;
+                                    PlayerRotationAction.restRotation();
+                                    PlayerBlockAction.useItemOnAction.blockPosFinish = pos;
                                     mc.player.swingHand(hand.get());
+                                    int i = 1;
+                                    while (i < blockHitResultIntegerPair.getRight()) {
+                                        interactionManager.interactBlock(
+                                                mc.player,
+                                                hand.get(),
+                                                trace
+                                        );
+                                        mc.player.swingHand(hand.get());
 
-                                    i++;
-                                }
-                                ((IBlock) block).afterAction();
-                                ((IBlock) block).BlockAction(stateSchematic, trace);
-                                notChangPlayerLook = false;
-                                concurrentSet.remove(pos);
-                            });
+                                        i++;
+                                    }
+                                    ((IBlock) block).afterAction();
+                                    ((IBlock) block).BlockAction(stateSchematic, trace);
+                                    latch.countDown(); // 任务完成后，减少CountDownLatch的值
+                                }));
+
+                        yawLock = lookAtPair.getLeft();
+                        pitchLock = lookAtPair.getRight();
+                        notChangPlayerLook = true;
+                        channel.writeAndFlush(new PlayerMoveC2SPacket.LookAndOnGround(
+                                yawLock,
+                                pitchLock,
+                                MinecraftClient.getInstance().player.isOnGround(),
+                                mc.player.horizontalCollision//不知道干嘛的参数
+                        ));
+                        channel.writeAndFlush(new PlayerActionC2SPacket(
+                                PlayerActionC2SPacket.Action.ABORT_DESTROY_BLOCK,
+                                pos,
+                                Direction.DOWN
+                        ));
+                        PlayerBlockAction.useItemOnAction.taskQueue.offer(runnable);
+
+                        try {
+                            latch.await(); // 阻塞当前线程，直到CountDownLatch的值为0
+                        } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
+                            // 处理中断异常
                         }
 
-                    }finally {
-                        if (notChangPlayerLook){
-                            notChangPlayerLook = false;
-                            concurrentSet.remove(pos);
-                        }
+
+                    });
+
+
+                } else {
+                    pickItem(mc, finalStack);
+                    ((IClientPlayerInteractionManager) interactionManager).syn();
+                    hand.set(EntityUtils.getUsedHandForItem(mc.player, finalStack));
+                    if (lookAtPair != null) {
+                        PlayerRotationAction.setServerBoundPlayerRotation(
+                                lookAtPair.getLeft(),
+                                lookAtPair.getRight(),
+                                mc.player.horizontalCollision
+                        );
                     }
+                    ((IBlock) block).firstAction();
+                    interactionManager.interactBlock(
+                            mc.player,
+                            hand.get(),
+                            offsetBlockHitResult
+                    );
+                    mc.player.swingHand(hand.get());
+                    PlayerBlockAction.useItemOnAction.blockPosFinish = pos;
+                    int i = 1;
+                    while (i < blockHitResultIntegerPair.getRight()) {
+                        interactionManager.interactBlock(
+                                mc.player,
+                                hand.get(),
+                                trace
+                        );
+                        mc.player.swingHand(hand.get());
+
+                        i++;
+                    }
+                    ((IBlock) block).afterAction();
+                    ((IBlock) block).BlockAction(stateSchematic, trace);
+                    if (lookAtPair != null) PlayerRotationAction.restRotation();
+                }
 
 
-
-
-
-
-
-                }, 0, TimeUnit.NANOSECONDS);
                 return ActionResult.SUCCESS;
             }
         }
-        if (placementRestrictionInEffect(pos))return ActionResult.FAIL;
+        if (placementRestrictionInEffect(pos)) return ActionResult.FAIL;
         return ActionResult.PASS;
     }
 
@@ -265,7 +298,7 @@ public class doEasyPlace {//TODO 轻松放置重写计划
                     return stack;
                 } else {
                     int slot = inv.getSlotWithStack(stack);
-                    if ( slot != -1) {
+                    if (slot != -1) {
                         return stack;
                     } else if (slot == -1 && Configs.Generic.PICK_BLOCK_SHULKERS.getBooleanValue()) {
                         slot = findSlotWithBoxWithItem(mc.player.playerScreenHandler, stack, false);
@@ -280,21 +313,22 @@ public class doEasyPlace {//TODO 轻松放置重写计划
         return null;
 
     }
+
     public static void pickItem(MinecraftClient mc, ItemStack stack) {
 
         if (EntityUtils.isCreativeMode(mc.player)) {
-           setPickedItemToHand(stack,mc);
+            setPickedItemToHand(stack, mc);
             mc.interactionManager.clickCreativeStack(mc.player.getStackInHand(Hand.MAIN_HAND), 36 + mc.player.getInventory().selectedSlot);
-        } else{
-            setPickedItemToHand(stack,mc);
+        } else {
+            setPickedItemToHand(stack, mc);
         }
     }
-    private static boolean placementRestrictionInEffect(BlockPos pos)
-    {
+
+    private static boolean placementRestrictionInEffect(BlockPos pos) {
 
         ;//获取mc的准星坐标
-         //目标位置不应有任何物品，
+        //目标位置不应有任何物品，
         //并且该位置位于逻辑示意图子区域内或附近
-        return  isPositionWithinRangeOfSchematicRegions( pos, 2);
+        return isPositionWithinRangeOfSchematicRegions(pos, 2);
     }
 }

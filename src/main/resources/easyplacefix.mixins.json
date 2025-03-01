@@ -71,6 +71,7 @@
     "block.signBlock.MixinWallHangingSignBlock",
     "block.signBlock.MixinWallSignBlock",
     "byteBuf.MixinWriteBlockHitResult",
+    "packet.MixinBlockUpdateS2CPacket",
     "packet.MixinCloseScreenS2CPacket",
     "packet.MixinInventoryS2CPacket",
     "packet.MixinOpenScreenS2CPacket",
