@@ -199,8 +199,6 @@ public class doEasyPlace {//TODO 轻松放置重写计划
                                             hand.get(),
                                             offsetBlockHitResult
                                     );
-                                    notChangPlayerLook = false;
-                                    PlayerRotationAction.restRotation();
                                     PlayerBlockAction.useItemOnAction.blockPosFinish = pos;
                                     mc.player.swingHand(hand.get());
                                     int i = 1;
@@ -216,6 +214,8 @@ public class doEasyPlace {//TODO 轻松放置重写计划
                                     }
                                     ((IBlock) block).afterAction();
                                     ((IBlock) block).BlockAction(stateSchematic, trace);
+                                    notChangPlayerLook = false;
+                                    PlayerRotationAction.restRotation();
                                     latch.countDown(); // 任务完成后，减少CountDownLatch的值
                                 }));
 
