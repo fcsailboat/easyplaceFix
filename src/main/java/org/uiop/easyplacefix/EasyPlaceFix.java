@@ -25,17 +25,13 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Predicate;
 
 public class EasyPlaceFix implements ModInitializer {
-    public static boolean notChangPlayerLook =false;
-    public static float yawLock, pitchLock =0;
-    public static BlockState pistonBlockState = null;
-    public static boolean modifyBoolean = false;
+
     public static List<Boolean> crafterSlot = new ArrayList<>(Arrays.asList(false, false, false, false, false, false, false, false, false));
     public static boolean crafterOperation = false;
     public static Integer screenId;
     public static ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 //    public static AtomicBoolean isRun = new AtomicBoolean();
-    // 初始化线程安全的Set
-    public static Set<BlockPos> concurrentSet = ConcurrentHashMap.newKeySet();
+
     @Override
     public void onInitialize() {
         ClientCommandRegistrationCallback.

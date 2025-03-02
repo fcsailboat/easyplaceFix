@@ -31,15 +31,15 @@ import org.uiop.easyplacefix.data.RelativeBlockHitResult;
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
-
+import static org.uiop.easyplacefix.until.PlayerBlockAction.useItemOnAction.*;
 import static fi.dy.masa.litematica.util.InventoryUtils.findSlotWithBoxWithItem;
 import static fi.dy.masa.litematica.util.InventoryUtils.setPickedItemToHand;
 import static fi.dy.masa.litematica.util.WorldUtils.getValidBlockRange;
 import static fi.dy.masa.litematica.util.WorldUtils.isPositionWithinRangeOfSchematicRegions;
-import static org.uiop.easyplacefix.EasyPlaceFix.*;
+import static org.uiop.easyplacefix.EasyPlaceFix.findBlockInInventory;
+import static org.uiop.easyplacefix.EasyPlaceFix.scheduler;
 import static org.uiop.easyplacefix.config.easyPlacefixConfig.LOOSEN_MODE;
 import static org.uiop.easyplacefix.data.LoosenModeData.items;
 
@@ -120,7 +120,7 @@ public class doEasyPlace {//TODO 轻松放置重写计划
         BlockHitResult trace = traceWrapper.getBlockHitResult();//这是投影获取玩家指向的方法
         World schematicWorld = SchematicWorldHandler.getSchematicWorld();
         BlockPos pos = trace.getBlockPos();//这是投影获取玩家指向方块坐标的方法
-        if (concurrentSet.contains(pos)) return ActionResult.FAIL;
+        if (concurrentMap.containsKey(pos)) return ActionResult.FAIL;
         BlockState stateClient = mc.world.getBlockState(pos);//获取本地方块状态
         BlockState stateSchematic = schematicWorld.getBlockState(pos);
         ActionResult isTermination = ((IBlock) stateClient.getBlock()).isWorldTermination(pos, stateSchematic, stateClient);//是否终止
@@ -178,7 +178,7 @@ public class doEasyPlace {//TODO 轻松放置重写计划
                     modifyBoolean = true;
                 }
                 ItemStack finalStack = itemStack2;
-                concurrentSet.add(pos);
+                concurrentMap.put(pos,0L);
 
                 AtomicReference<Hand> hand = new AtomicReference<>();
 
@@ -186,7 +186,6 @@ public class doEasyPlace {//TODO 轻松放置重写计划
                 Pair<Float, Float> lookAtPair = ((IBlock) block).getLimitYawAndPitch(stateSchematic);
                 boolean wantActionAck = ((IBlock) block).HasSleepTime(stateSchematic);
                 if (wantActionAck) {
-                    CountDownLatch latch = new CountDownLatch(1); // 创建一个CountDownLatch，初始值为1
                     scheduler.execute(() -> {
                         Runnable runnable = (() ->
                                 mc.execute(() -> {
@@ -199,7 +198,7 @@ public class doEasyPlace {//TODO 轻松放置重写计划
                                             hand.get(),
                                             offsetBlockHitResult
                                     );
-                                    PlayerBlockAction.useItemOnAction.blockPosFinish = pos;
+                                 concurrentMap.put(pos,System.currentTimeMillis());//设置缓存
                                     mc.player.swingHand(hand.get());
                                     int i = 1;
                                     while (i < blockHitResultIntegerPair.getRight()) {
@@ -264,7 +263,7 @@ public class doEasyPlace {//TODO 轻松放置重写计划
                             offsetBlockHitResult
                     );
                     mc.player.swingHand(hand.get());
-                    PlayerBlockAction.useItemOnAction.blockPosFinish = pos;
+                    concurrentMap.put(pos,System.currentTimeMillis());
                     int i = 1;
                     while (i < blockHitResultIntegerPair.getRight()) {
                         interactionManager.interactBlock(

@@ -1,11 +1,11 @@
 package org.uiop.easyplacefix.until;
 
+import net.minecraft.block.BlockState;
 import net.minecraft.util.math.BlockPos;
 import org.uiop.easyplacefix.EasyPlaceFix;
 
+import java.util.Map;
 import java.util.concurrent.*;
-
-import static org.uiop.easyplacefix.EasyPlaceFix.concurrentSet;
 
 public class PlayerBlockAction {
     // 创建单线程线程池
@@ -53,7 +53,13 @@ public class PlayerBlockAction {
 
     public static class useItemOnAction {
         public static final BlockingQueue<Runnable> taskQueue = new LinkedBlockingQueue<>();
-        public static BlockPos blockPosFinish = null;
+        public static float yawLock, pitchLock = 0;
+        public static boolean notChangPlayerLook = false;
+        public static boolean modifyBoolean = false;
+        // 初始化线程安全的Set
+        public static Map<BlockPos, Long> concurrentMap = new ConcurrentHashMap<>();
+        public static BlockState pistonBlockState = null;
+        public static CountDownLatch latch = new CountDownLatch(0); // 创建一个CountDownLatch，初始值为0
 
         public static void run() {
             Runnable runnable = taskQueue.poll();
@@ -63,10 +69,12 @@ public class PlayerBlockAction {
         }
 
         public static void upDateBlock(BlockPos pos) {
-            if (blockPosFinish != null) {
-                if (blockPosFinish.equals(pos)) {
-                    concurrentSet.remove(pos);
-                    blockPosFinish = null;
+            if (concurrentMap.containsKey(pos)) {
+                if (concurrentMap.get(pos) != 0) {
+                    notChangPlayerLook = false;
+                    concurrentMap.remove(pos);
+                    PlayerRotationAction.restRotation();
+                    latch.countDown(); // 任务完成后，减少CountDownLatch的值
                 }
             }
 
