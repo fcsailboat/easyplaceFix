@@ -260,7 +260,7 @@ public class doEasyPlace {//TODO 轻松放置重写计划
                             offsetBlockHitResult
                     );
                     mc.player.swingHand(hand.get());
-                    concurrentMap.put(pos,System.currentTimeMillis());
+                    concurrentMap.put(pos, 10086L);
                     int i = 1;
                     while (i < blockHitResultIntegerPair.getRight()) {
                         interactionManager.interactBlock(
@@ -299,7 +299,8 @@ public class doEasyPlace {//TODO 轻松放置重写计划
                     } else if (slot == -1 && Configs.Generic.PICK_BLOCK_SHULKERS.getBooleanValue()) {
                         slot = findSlotWithBoxWithItem(mc.player.playerScreenHandler, stack, false);
                         if (slot != -1) {
-                            return mc.player.playerScreenHandler.slots.get(slot).getStack();//潜影盒
+                            pickItem(mc, mc.player.playerScreenHandler.slots.get(slot).getStack());
+                            return null;//潜影盒
                         }
                     }
                 }

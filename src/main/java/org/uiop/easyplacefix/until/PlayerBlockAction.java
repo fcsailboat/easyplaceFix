@@ -70,11 +70,19 @@ public class PlayerBlockAction {
 
         public static void upDateBlock(BlockPos pos) {
             if (concurrentMap.containsKey(pos)) {
-                if (concurrentMap.get(pos) != 0) {
-                    notChangPlayerLook = false;
+                long time = concurrentMap.get(pos);
+                if (time > 0) {
+                    if (time != 10086) {
+
+
+                        notChangPlayerLook = false;
+
+                        semaphore.release();
+                    }
+
                     concurrentMap.remove(pos);
                     PlayerRotationAction.restRotation();
-                    semaphore.release();
+
                     concurrentMap.forEach((k, v) -> {
                         if ((System.currentTimeMillis() - v) > 300) {
                             concurrentMap.remove(k);
@@ -86,4 +94,5 @@ public class PlayerBlockAction {
             }
 
         }
-    }}
+    }
+}
