@@ -232,7 +232,7 @@ public class doEasyPlace {//TODO 轻松放置重写计划
                         PlayerBlockAction.useItemOnAction.taskQueue.offer(runnable);
 
                         try {
-                            latch.await(); // 阻塞当前线程，直到CountDownLatch的值为0
+                            semaphore.acquire();
                         } catch (InterruptedException e) {
                             Thread.currentThread().interrupt();
                             // 处理中断异常

@@ -59,7 +59,7 @@ public class PlayerBlockAction {
         // 初始化线程安全的Set
         public static Map<BlockPos, Long> concurrentMap = new ConcurrentHashMap<>();
         public static BlockState pistonBlockState = null;
-        public static CountDownLatch latch = new CountDownLatch(0); // 创建一个CountDownLatch，初始值为0
+        public static Semaphore semaphore = new Semaphore(0); // 初始许可数为 0
 
         public static void run() {
             Runnable runnable = taskQueue.poll();
@@ -74,12 +74,16 @@ public class PlayerBlockAction {
                     notChangPlayerLook = false;
                     concurrentMap.remove(pos);
                     PlayerRotationAction.restRotation();
-                    latch.countDown(); // 任务完成后，减少CountDownLatch的值
+                    semaphore.release();
+                    concurrentMap.forEach((k, v) -> {
+                        if ((System.currentTimeMillis() - v) > 300) {
+                            concurrentMap.remove(k);
+                        }
+                    });
                 }
+
+
             }
 
-
         }
-
-    }
-}
+    }}
