@@ -88,7 +88,8 @@
     "MixinClientWorld",
     "config.ConfigGuiTabAccessor",
     "config.MixinConfigGuiTab",
-    "config.MixinGuiConfigs"
+    "config.MixinGuiConfigs",
+    "config.MixinGuiRenderLayer"
   ],
   "injectors": {
     "defaultRequire": 1

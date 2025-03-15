@@ -23,13 +23,13 @@ import static org.uiop.easyplacefix.config.easyPlacefixConfig.getExtraGenericCon
 public abstract class MixinGuiConfigs {
 
     @WrapOperation(at = @At(value = "INVOKE", target = "Lfi/dy/masa/litematica/gui/GuiConfigs;createButton(IIILfi/dy/masa/litematica/gui/GuiConfigs$ConfigGuiTab;)I", ordinal = 5), method = "initGui")
-    private int t1(GuiConfigs instance, int x, int y, int width, GuiConfigs.ConfigGuiTab tab, Operation<Integer> original) {
+    private int createMyButton(GuiConfigs instance, int x, int y, int width, GuiConfigs.ConfigGuiTab tab, Operation<Integer> original) {
         Integer call = original.call(instance, x, y, width, tab);
         createButton(call + x, y ,-1 , EasyPlaceFix.EASY_FIX);
         return call;
     }
     @Inject(at =@At("HEAD"),method = "getConfigs", cancellable = true,remap = false)
-    private void t2(CallbackInfoReturnable<List<GuiConfigsBase.ConfigOptionWrapper>> cir) {
+    private void getConfigs(CallbackInfoReturnable<List<GuiConfigsBase.ConfigOptionWrapper>> cir) {
         GuiConfigs.ConfigGuiTab tab = DataManager.getConfigGuiTab();
         if (EasyPlaceFix.EASY_FIX.equals(tab)) {
             List<IConfigBase> list1 = Arrays.asList(getExtraGenericConfigs());
