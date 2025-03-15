@@ -1,5 +1,6 @@
 package org.uiop.easyplacefix.Mixin;
 
+import com.llamalad7.mixinextras.sugar.Local;
 import fi.dy.masa.litematica.config.Configs;
 import fi.dy.masa.litematica.util.EasyPlaceProtocol;
 import fi.dy.masa.litematica.util.PlacementHandler;
@@ -37,30 +38,36 @@ public abstract class MixinWorldUtils {
 //        }
 //        return original.call(mc);
 //    }
-    @Inject(method = "doEasyPlaceAction", at = @At("HEAD"), cancellable = true)
-    private static void aa(MinecraftClient mc, CallbackInfoReturnable<ActionResult> cir) {
+    @Inject(method = "doEasyPlaceAction", at = @At(value = "INVOKE", target = "Lfi/dy/masa/litematica/util/RayTraceUtils$RayTraceWrapper;getHitType()Lfi/dy/masa/litematica/util/RayTraceUtils$RayTraceWrapper$HitType;",ordinal = 0), cancellable = true,remap = false)
+    private static void t1(MinecraftClient mc, CallbackInfoReturnable<ActionResult> cir, @Local RayTraceUtils.RayTraceWrapper traceWrapper){
         if (PlacementHandler.getEffectiveProtocolVersion() == EasyPlaceProtocol.SLAB_ONLY) {
-            RayTraceUtils.RayTraceWrapper traceWrapper;
-
-            double traceMaxRange = getValidBlockRange(mc);
-            if (Configs.Generic.EASY_PLACE_FIRST.getBooleanValue()) {
-                boolean targetFluids = Configs.InfoOverlays.INFO_OVERLAYS_TARGET_FLUIDS.getBooleanValue();
-                traceWrapper = RayTraceUtils.getGenericTrace(mc.world, mc.player, traceMaxRange, true, targetFluids, false);
-
-            } else {
-//            Configs.Generic.EASY_PLACE_FIRST.setBooleanValue(true); 紧急方案[Doge]
-                traceWrapper = RayTraceUtils.getFurthestSchematicWorldTraceBeforeVanilla(mc.world, mc.player, traceMaxRange);
-            }
-            if (traceWrapper == null) {
-                cir.setReturnValue(ActionResult.PASS);
-                cir.cancel();
-                return;
-            }
             cir.setReturnValue(doEasyPlace2(mc, traceWrapper));
-            cir.cancel();
         }
-
     }
+//    @Inject(method = "doEasyPlaceAction", at = @At("HEAD"), cancellable = true)
+//    private static void aa(MinecraftClient mc, CallbackInfoReturnable<ActionResult> cir) {
+//        if (PlacementHandler.getEffectiveProtocolVersion() == EasyPlaceProtocol.SLAB_ONLY) {
+//            RayTraceUtils.RayTraceWrapper traceWrapper;
+//
+//            double traceMaxRange = getValidBlockRange(mc);
+//            if (Configs.Generic.EASY_PLACE_FIRST.getBooleanValue()) {
+//                boolean targetFluids = Configs.InfoOverlays.INFO_OVERLAYS_TARGET_FLUIDS.getBooleanValue();
+//                traceWrapper = RayTraceUtils.getGenericTrace(mc.world, mc.player, traceMaxRange, true, targetFluids, false);
+//
+//            } else {
+////            Configs.Generic.EASY_PLACE_FIRST.setBooleanValue(true); 紧急方案[Doge]
+//                traceWrapper = RayTraceUtils.getFurthestSchematicWorldTraceBeforeVanilla(mc.world, mc.player, traceMaxRange);
+//            }
+//            if (traceWrapper == null) {
+//                cir.setReturnValue(ActionResult.PASS);
+//                return;
+//            }
+//            cir.setReturnValue(doEasyPlace2(mc, traceWrapper));
+//        }
+//
+//    }
+
+
 //    @Inject(method = "doEasyPlaceAction",
 //            at = @At(value = "INVOKE",
 //                    target = "Lfi/dy/masa/litematica/util/RayTraceUtils$RayTraceWrapper;" +
