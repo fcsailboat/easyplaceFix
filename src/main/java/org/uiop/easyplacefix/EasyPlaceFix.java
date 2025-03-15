@@ -1,31 +1,27 @@
 package org.uiop.easyplacefix;
 
-import fi.dy.masa.litematica.util.InventoryUtils;
+import fi.dy.masa.litematica.gui.GuiConfigs;
 import net.fabricmc.api.ModInitializer;
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.Hand;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
-import net.minecraft.util.math.BlockPos;
+import org.uiop.easyplacefix.Mixin.config.ConfigGuiTabAccessor;
+import org.uiop.easyplacefix.config.Hotkeys;
 import org.uiop.easyplacefix.screen.CustomInventoryScreen;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Predicate;
 
 public class EasyPlaceFix implements ModInitializer {
 
+    public static final GuiConfigs.ConfigGuiTab EASY_FIX = ConfigGuiTabAccessor.init("EASY_FIX", 6, "litematica.gui.button.config_gui.easy_fix");
     public static List<Boolean> crafterSlot = new ArrayList<>(Arrays.asList(false, false, false, false, false, false, false, false, false));
     public static boolean crafterOperation = false;
     public static Integer screenId;
@@ -65,6 +61,7 @@ public class EasyPlaceFix implements ModInitializer {
                                 return 1;
                         }))
                 );
+        Hotkeys.init();
     }
 
     public static ItemStack findBlockInInventory(PlayerInventory inv, Predicate<Block> predicate) {
