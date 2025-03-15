@@ -14,12 +14,16 @@ public final class easyPlacefixConfig {
             new ConfigBoolean("AllowInteraction", false, "EasyPlaceFix.config.generic.comment.AllowInteraction");
     public static final ConfigBooleanHotkeyed OBSERVER_DETECT =
             new ConfigBooleanHotkeyed("observerDetect", false,"","EasyPlaceFix.config.generic.comment.observerDetect");
+    public static final ConfigBooleanHotkeyed ENABLE_FIX =
+            new ConfigBooleanHotkeyed("enableFix", false,"","EasyPlaceFix.config.generic.comment.enableFix");
+
 //    public static final ConfigBoolean Chain_Mode =
 //            new ConfigBoolean("ChainMode", true, "EasyPlaceFix.config.generic.comment.ChainMode");
 
 
     public static IConfigBase[] getExtraGenericConfigs() {
         return new IConfigBase[]{
+                ENABLE_FIX,
                 LOOSEN_MODE,
                 IGNORE_NBT,
                 Allow_Interaction,

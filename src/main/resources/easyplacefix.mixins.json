@@ -85,7 +85,10 @@
   ],
   "client": [
     "MixinClientPlayerInteractionManager",
-    "MixinClientWorld"
+    "MixinClientWorld",
+    "config.ConfigGuiTabAccessor",
+    "config.MixinConfigGuiTab",
+    "config.MixinGuiConfigs"
   ],
   "injectors": {
     "defaultRequire": 1
