@@ -33,6 +33,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
+
+import static org.uiop.easyplacefix.config.easyPlacefixConfig.IGNORE_NBT;
 import static org.uiop.easyplacefix.until.PlayerBlockAction.useItemOnAction.*;
 import static fi.dy.masa.litematica.util.InventoryUtils.findSlotWithBoxWithItem;
 import static fi.dy.masa.litematica.util.InventoryUtils.setPickedItemToHand;
@@ -293,9 +295,15 @@ public class doEasyPlace {//TODO 轻松放置重写计划
                 if (EntityUtils.isCreativeMode(mc.player)) {
                     return stack;
                 } else {
-                    int slot = inv.getSlotWithStack(stack);
+                    int slot;
+                    if (IGNORE_NBT.getBooleanValue()){
+                        slot =getSlotWithStackWithOutNbt(stack,inv);
+                    }else {
+                        slot = inv.getSlotWithStack(stack);
+                    }
+
                     if (slot != -1) {
-                        return stack;
+                        return inv.getStack(slot);
                     } else if (slot == -1 && Configs.Generic.PICK_BLOCK_SHULKERS.getBooleanValue()) {
                         slot = findSlotWithBoxWithItem(mc.player.playerScreenHandler, stack, false);
                         if (slot != -1) {
@@ -310,7 +318,15 @@ public class doEasyPlace {//TODO 轻松放置重写计划
         return null;
 
     }
+    public static int getSlotWithStackWithOutNbt(ItemStack stack, PlayerInventory inv) {
+        for(int i = 0; i < inv.main.size(); ++i) {
+            if (!inv.main.get(i).isEmpty() && ItemStack.areItemsEqual(stack, inv.main.get(i))) {
+                return i;
+            }
+        }
 
+        return -1;
+    }
     public static void pickItem(MinecraftClient mc, ItemStack stack) {
 
         if (EntityUtils.isCreativeMode(mc.player)) {

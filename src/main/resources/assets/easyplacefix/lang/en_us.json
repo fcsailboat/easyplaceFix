@@ -9,7 +9,7 @@
   "easyPlaceFix.config.hotkeys.comment.AllowInteraction": "EasyPlace opening shortcuts that will allow interaction",
   "easyPlaceFix.config.hotkeys.comment.loosenmode": "EasyPlace the shortcut key Settings for loosen mode",
   "easyPlaceFix.config.hotkeys.comment.nbtIgnore": "easyPlace NBT shortcuts for neglected inventory items",
-  "enableFix": "Easy Fix",
+  "enableFix": "EasyPlaceFixMasterSwitch",
   "loosenMode": "LoosenMode",
   "loosenModeHotkey": "loosenMode shortcut key",
   "nbtIgnore": "easyPlaceIgnoreItemNBT",

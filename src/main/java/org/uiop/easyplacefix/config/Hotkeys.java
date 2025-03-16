@@ -14,6 +14,9 @@ public class Hotkeys {
             public void addKeysToMap(IKeybindManager iKeybindManager) {
                 iKeybindManager.addKeybindToMap(OBSERVER_DETECT.getKeybind());
                 iKeybindManager.addKeybindToMap(ENABLE_FIX.getKeybind());
+                iKeybindManager.addKeybindToMap(IGNORE_NBT.getKeybind());
+                iKeybindManager.addKeybindToMap(LOOSEN_MODE.getKeybind());
+                iKeybindManager.addKeybindToMap(Allow_Interaction.getKeybind());
             }
 
             @Override

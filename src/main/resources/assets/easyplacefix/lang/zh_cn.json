@@ -9,7 +9,7 @@
   "easyPlaceFix.config.hotkeys.comment.AllowInteraction": "轻松放置将允许进行交互的快捷键",
   "easyPlaceFix.config.hotkeys.comment.loosenmode": "轻松放置的宽容模式的快捷键设置",
   "easyPlaceFix.config.hotkeys.comment.nbtIgnore": "轻松放置忽视库存物品NBT的快捷键设置",
-  "enableFix": "轻松放置修复",
+  "enableFix": "轻松放置修复总开关",
   "loosenMode": "轻松放置宽容模式",
   "loosenModeHotkey": "宽容模式快捷键",
   "nbtIgnore": "轻松放置忽视库存物品NBT",

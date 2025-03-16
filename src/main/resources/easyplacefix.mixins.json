@@ -5,7 +5,6 @@
   "mixins": [
     "MixinConfigs",
     "MixinHotkey",
-    "MixinInventoryUtils",
     "MixinPistonBlock",
     "MixinWorldUtils",
     "AccessorMixin.ClientConnectionAccessor",
