@@ -41,24 +41,14 @@ public class EasyPlaceFix implements ModInitializer {
 //                                context.getSource().sendFeedback(Text.literal("loosenModeSetting ON"));
 //                                loosenMode=true;
 //                            }
-                            Thread thread = new Thread(()->{
-                                MinecraftClient.getInstance().execute(()->{
-                                    MinecraftClient.getInstance().setScreen(
-                                            new CustomInventoryScreen(MinecraftClient.getInstance().player,
-                                                    MinecraftClient.getInstance().player.networkHandler.getEnabledFeatures(),
-                                                    true
-                                            )
-                                    );
-
-                                });
-
-
-                            });
-                            thread.start();
-
-
-
-                                return 1;
+                            MinecraftClient client = MinecraftClient.getInstance();
+                            CustomInventoryScreen screen = new CustomInventoryScreen(
+                                    client.player,
+                                    client.player.networkHandler.getEnabledFeatures(),
+                                    true
+                            );
+                            client.send(()-> client.setScreen(screen));
+                            return 1;
                         }))
                 );
         Hotkeys.init();
